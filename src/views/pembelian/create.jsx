@@ -12,8 +12,12 @@ import Api from "../../services/api";
 //import handler error
 import { handleErrors } from "../../utils/handleErrors";
 
+//import react select
+import Select from 'react-select'
+
 export default function PembelianCreate({ fetchData }) {
     const [supplierId, setSupplierId] = useState("");
+
     const [imei, setImei] = useState("");
     const [handPhone, setHandPhone] = useState("");
     const [hargaPembelian, setHargaPembelian] = useState("")
@@ -99,6 +103,12 @@ export default function PembelianCreate({ fetchData }) {
             });
     };
 
+    // data untuk react select data supplier
+    const supplierOptions = supplier.map(sup => ({
+        value: sup.id,
+        label: `${sup.name} - ${sup.kode} - ${sup.no_hp}`
+    }))
+
     return (
         <>
             <a
@@ -153,18 +163,12 @@ export default function PembelianCreate({ fetchData }) {
                                     <div className="col-lg-12">
                                         <div className="mb-3">
                                             <label className="form-label">Supplier</label>
-                                            <select
-                                                className="form-select"
-                                                value={supplierId}
-                                                onChange={(e) => setSupplierId(e.target.value)}
-                                            >
-                                                <option value="">-- Select Supplier --</option>
-                                                {supplier.map((sup) => (
-                                                    <option value={sup.id} key={sup.id}>
-                                                        {sup.name}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            <Select
+                                                options={supplierOptions}
+                                                value={supplierOptions.find(option => option.value === supplierId)}
+                                                onChange={(selectedOption) => setSupplierId(selectedOption ? selectedOption.value : "")}
+                                                placeholder="-- Select Supplier --"
+                                            />
                                             {errors.supplier_id && (
                                                 <div className="alert alert-danger mt-2">
                                                     {errors.supplier_id}
