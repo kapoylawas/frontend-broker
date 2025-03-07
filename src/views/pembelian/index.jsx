@@ -167,7 +167,7 @@ export default function Dashboard() {
                                                                         <div className="font-weight-medium">
                                                                             {product.supplier.name}
                                                                             <hr />
-                                                                            <span class="badge" style={{ backgroundColor: 'blue', color: 'white' }}>{product.supplier.no_hp}</span>
+                                                                            <span className="badge" style={{ backgroundColor: 'blue', color: 'white' }}>{product.supplier.no_hp}</span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -203,7 +203,7 @@ export default function Dashboard() {
                                                     ))
                                                 ) : (
                                                     <tr>
-                                                        <td colSpan="6" className="text-center">
+                                                        <td colSpan="10" className="text-center">
                                                             <div className="alert alert-danger mb-0">
                                                                 Data Belum Tersedia!
                                                             </div>
