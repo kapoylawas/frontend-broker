@@ -16,10 +16,10 @@ import { handleErrors } from "../../utils/handleErrors";
 import Select from 'react-select'
 
 export default function PembelianCreate({ fetchData }) {
+    // state
     const [supplierId, setSupplierId] = useState("");
-
+    const [handPhoneId, setHandPhoneId] = useState("");
     const [imei, setImei] = useState("");
-    const [handPhone, setHandPhone] = useState("");
     const [hargaPembelian, setHargaPembelian] = useState("")
     const [sales, setSales] = useState("")
     const [tanggalPembelian, setTanggalPembelian] = useState("")
@@ -27,8 +27,10 @@ export default function PembelianCreate({ fetchData }) {
     const [catatan, setCatatan] = useState("");
     const [errors, setErrors] = useState({});
 
-    //state categories
+    //state supplier
     const [supplier, setSupplier] = useState([]);
+    // state hanphone
+    const [handPhone, setHandPhone] = useState([]);
 
     //ref
     const modalRef = useRef(null); // Create a ref for the modal
@@ -36,7 +38,7 @@ export default function PembelianCreate({ fetchData }) {
     //token
     const token = Cookies.get("token");
 
-    //function "fetchCategories"
+    //function "fetchSupplier"
     const fetchSupplier = async () => {
         //set authorization header with token
         Api.defaults.headers.common["Authorization"] = token;
@@ -46,10 +48,26 @@ export default function PembelianCreate({ fetchData }) {
         });
     };
 
-    //hook
+    //function "fetcHandPhone"
+    const fetchHandPhone = async () => {
+        //set authorization header with token
+        Api.defaults.headers.common["Authorization"] = token;
+        await Api.get("/api/hand-phone").then((response) => {
+            //set data response to state "catgeories"
+            setHandPhone(response.data.data);
+        });
+    };
+
+    //hook supplier
     useEffect(() => {
-        //call function "fetchCategories"
+        //call function fetch supplier
         fetchSupplier();
+    }, []);
+
+    // hook handphone
+    useEffect(() => {
+        //call function fetch handphone
+        fetchHandPhone();
     }, []);
 
     //function "storeProduct"
@@ -60,7 +78,7 @@ export default function PembelianCreate({ fetchData }) {
             //data
             supplier_id: supplierId,
             imei: imei,
-            handphone_id: handPhone,
+            handphone_id: handPhoneId,
             harga_pembelian: hargaPembelian,
             sales: sales,
             tanggal_pembelian: tanggalPembelian,
@@ -90,7 +108,7 @@ export default function PembelianCreate({ fetchData }) {
                 // Reset form
                 setSupplierId("");
                 setImei("");
-                setHandPhone("");
+                setHandPhoneId("");
                 setCatatan("");
                 setHargaPembelian("");
                 setSales("");
@@ -108,6 +126,12 @@ export default function PembelianCreate({ fetchData }) {
         value: sup.id,
         label: `${sup.name} - ${sup.kode} - ${sup.no_hp}`
     }))
+
+    // data untuk react select data supplier
+    const handPhoneOptions = Array.isArray(handPhone) ? handPhone.map(han => ({
+        value: han.id,
+        label: `${han.name}`
+    })) : [];
 
     return (
         <>
@@ -201,12 +225,11 @@ export default function PembelianCreate({ fetchData }) {
                                     <div className="col-lg-12">
                                         <div className="mb-3">
                                             <label className="form-label">Handphone</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                value={handPhone}
-                                                onChange={(e) => setHandPhone(e.target.value)}
-                                                placeholder="Masukkan tipe handphone"
+                                            <Select
+                                                options={handPhoneOptions}
+                                                value={handPhoneOptions.find(option => option.value === handPhoneId)}
+                                                onChange={(selectedOption) => setHandPhoneId(selectedOption ? selectedOption.value : "")}
+                                                placeholder="-- Select Hand-phone --"
                                             />
                                             {errors.handphone_id && (
                                                 <div className="alert alert-danger mt-2">
