@@ -14,6 +14,7 @@ import PaginationComponent from "../../components/Pagination";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import DeleteButton from "../../components/DeleteButton";
+import { Link } from "react-router-dom";
 
 export default function Dashboard() {
   //state products
@@ -198,6 +199,16 @@ export default function Dashboard() {
                                     endpoint="/api/barang-masuk"
                                     fetchData={fetchData}
                                   />
+                                </div>
+                                <br />
+                                <div className="btn-list flex-nowrap">
+                                  <Link
+                                    to={`/showBarang/${product.id}`}
+                                  >
+                                    <button className="btn btn-info rounded">
+                                      Lihat
+                                    </button>
+                                  </Link>
                                 </div>
                               </td>
                             </tr>

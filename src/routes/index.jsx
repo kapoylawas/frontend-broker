@@ -8,6 +8,7 @@ import { useStore } from '../stores/user';
 import Login from "../views/auth/login.jsx";
 import Dashboard from "../views/dashboard/index.jsx";
 import Pembelian from "../views/pembelian/index.jsx";
+import ShowBarang from "../views/pembelian/showBarang.jsx";
 
 export default function AppRoutes() {
 
@@ -30,6 +31,11 @@ export default function AppRoutes() {
             {/* rout "pembelian" */}
             <Route path="/pembelian" element={
                 token ? <Pembelian /> : <Navigate to="/" replace />
+            } />
+
+            {/* rout "show barang pembelian" */}
+            <Route path="/showBarang/:id" element={
+                token ? <ShowBarang /> : <Navigate to="/" replace />
             } />
 
         </Routes>
