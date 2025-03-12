@@ -6,8 +6,9 @@ import Cookies from "js-cookie";
 import Api from "../../services/api";
 import { useEffect, useState } from "react";
 import moneyFormat from "../../utils/moneyFormat";
-// Import react-select
 import Select from "react-select";
+import toast from "react-hot-toast";
+import { handleErrors } from "../../utils/handleErrors";
 
 export default function ShowBarang() {
   const { id } = useParams();
@@ -15,13 +16,21 @@ export default function ShowBarang() {
 
   const [dataBarang, setDataBarang] = useState({});
   const [dataSupplier, setDataSupplier] = useState({});
+  const [dataHandPhone, setDataHandPhone] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [supplierId, setSupplierId] = useState("");
-  console.log(supplierId);
-  
+  const [handPhoneId, setHandPhoneId] = useState("");
+  const [imei, setImei] = useState("");
+  const [jenisPembelian, setJenisPembelian] = useState("");
+  const [tanggalPembelian, setTanggalPembelian] = useState("");
+  const [sales, setSales] = useState("");
+  const [catatanAwal, setCatatanAwal] = useState("");
+  const [catatanSelesai, setCatatanSelesai] = useState("");
+  const [hargaPembelian, setHargaPembelian] = useState("");
   const [supplier, setSupplier] = useState([]);
+  const [handPhone, setHandPhone] = useState([]);
+  const [errors, setErrors] = useState({});
 
-  // Function to fetch suppliers
   const fetchSupplier = async () => {
     Api.defaults.headers.common["Authorization"] = token;
     await Api.get("/api/supplier-all").then((response) => {
@@ -29,42 +38,83 @@ export default function ShowBarang() {
     });
   };
 
-  // Function to fetch barang masuk
+  const fetchHandPhone = async () => {
+    Api.defaults.headers.common["Authorization"] = token;
+    await Api.get("/api/hand-phone").then((response) => {
+      setHandPhone(response.data.data);
+    });
+  };
+
   const fetchBarangMasuk = async () => {
     Api.defaults.headers.common["Authorization"] = token;
     await Api.get(`/api/barang-masuk/${id}`).then((response) => {
       setDataBarang(response.data.data);
       setDataSupplier(response.data.data.supplier);
-      setSupplierId(response.data.data.supplier.id); // Set supplierId to the current supplier's ID
+      setDataHandPhone(response.data.data.handphone);
+      setImei(response.data.data.imei);
+      setJenisPembelian(response.data.data.jenis_pembelian);
+      setTanggalPembelian(response.data.data.tanggal_pembelian);
+      setSales(response.data.data.sales);
+      setCatatanAwal(response.data.data.catatan_awal);
+      setCatatanSelesai(response.data.data.catatan_selesai);
+      setHargaPembelian(response.data.data.harga_pembelian);
+      setSupplierId(response.data.data.supplier.id);
+      setHandPhoneId(response.data.data.handphone.id);
     });
   };
 
   useEffect(() => {
     fetchBarangMasuk();
     fetchSupplier();
+    fetchHandPhone();
   }, []);
 
-  // Data for react-select
   const supplierOptions = supplier.map((sup) => ({
     value: sup.id,
     label: `${sup.name} - ${sup.kode} - ${sup.no_hp}`,
   }));
 
-  const handleEditToggle = () => {
-    setIsEditing(!isEditing);
-    if (!isEditing) {
-      setSupplierId(dataSupplier.id); // Set supplierId to current supplier's ID when entering edit mode
+  const handPhoneOptions = Array.isArray(handPhone)
+    ? handPhone.map((han) => ({
+        value: han.id,
+        label: `${han.name}`,
+      }))
+    : [];
+
+  const handleEditToggle = async () => {
+    if (isEditing) {
+      await updateBarangMasuk();
     }
+    setIsEditing(!isEditing);
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    if (name === "supplier") {
-      setDataSupplier({ ...dataSupplier, name: value });
-    } else if (name === "subtotal") {
-      setDataBarang({ ...dataBarang, harga_pembelian: value });
-    } else if (name === "item") {
-      setDataBarang({ ...dataBarang, item: value });
+  const updateBarangMasuk = async () => {
+    const payload = {
+      supplier_id: supplierId,
+      imei: imei,
+      handphone_id: handPhoneId,
+      harga_pembelian: hargaPembelian,
+      sales: sales,
+      tanggal_pembelian: tanggalPembelian,
+      jenis_pembelian: jenisPembelian,
+      catatan_awal: catatanAwal,
+      catatan_selesai: catatanSelesai,
+    };
+
+    try {
+      const response = await Api.put(`/api/barang-masuk/${id}`, payload);
+      toast.success(`${response.data.meta.message}`, {
+        duration: 5000,
+        position: "top-center",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
+      fetchBarangMasuk(); // Refresh data after update
+    } catch (error) {
+      handleErrors(error.response.data, setErrors);
     }
   };
 
@@ -125,22 +175,133 @@ export default function ShowBarang() {
                               <tr>
                                 <th>Item</th>
                                 <td>
+                                  SAMSUNG GALAXY S22 ULTRA 128GB BURGUNDY (SEIN)
+                                </td>
+                              </tr>
+                              <tr>
+                                <th>Handphone</th>
+                                <td>
                                   {isEditing ? (
-                                    <input
-                                      type="text"
-                                      name="item"
-                                      value={dataBarang.item} // Ensure this is the correct property
-                                      onChange={handleInputChange}
+                                    <Select
+                                      options={handPhoneOptions}
+                                      value={handPhoneOptions.find(
+                                        (option) => option.value === handPhoneId
+                                      )}
+                                      onChange={(selectedOption) =>
+                                        setHandPhoneId(
+                                          selectedOption
+                                            ? selectedOption.value
+                                            : ""
+                                        )
+                                      }
+                                      placeholder="-- Select Handphone --"
                                     />
                                   ) : (
-                                    "SAMSUNG GALAXY S22 ULTRA 128GB BURGUNDY (SEIN)"
+                                    <b>{dataHandPhone.name}</b>
                                   )}
                                 </td>
                               </tr>
                               <tr>
                                 <th>IMEI</th>
                                 <td>
-                                  <b>{dataBarang.imei}</b>
+                                  {isEditing ? (
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={imei}
+                                      onChange={(e) => setImei(e.target.value)}
+                                      placeholder="Scan IMEI"
+                                    />
+                                  ) : (
+                                    <b>{imei}</b>
+                                  )}
+                                </td>
+                              </tr>
+                              <tr>
+                                <th>Jenis Pembelian</th>
+                                <td>
+                                  {isEditing ? (
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={jenisPembelian}
+                                      onChange={(e) =>
+                                        setJenisPembelian(e.target.value)
+                                      }
+                                    />
+                                  ) : (
+                                    <b>{jenisPembelian}</b>
+                                  )}
+                                </td>
+                              </tr>
+                              <tr>
+                                <th>Tanggal Pembelian</th>
+                                <td>
+                                  {isEditing ? (
+                                    <input
+                                      type="date"
+                                      className="form-control"
+                                      value={tanggalPembelian.split("T")[0]}
+                                      onChange={(e) =>
+                                        setTanggalPembelian(e.target.value)
+                                      }
+                                    />
+                                  ) : (
+                                    <b>
+                                      {tanggalPembelian
+                                        ? tanggalPembelian.split("T")[0]
+                                        : "Tanggal tidak tersedia"}
+                                    </b>
+                                  )}
+                                </td>
+                              </tr>
+                              <tr>
+                                <th>Sales</th>
+                                <td>
+                                  {isEditing ? (
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={sales}
+                                      onChange={(e) => setSales(e.target.value)}
+                                    />
+                                  ) : (
+                                    <b>{sales}</b>
+                                  )}
+                                </td>
+                              </tr>
+                              <tr>
+                                <th>Catatan awal</th>
+                                <td>
+                                  {isEditing ? (
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={catatanAwal}
+                                      onChange={(e) =>
+                                        setCatatanAwal(e.target.value)
+                                      }
+                                    />
+                                  ) : (
+                                    <b>{catatanAwal}</b>
+                                  )}
+                                </td>
+                              </tr>
+                              <tr>
+                                <th>Catatan selesai</th>
+                                <td>
+                                  {isEditing ? (
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={catatanSelesai}
+                                      onChange={(e) =>
+                                        setCatatanSelesai(e.target.value)
+                                      }
+                                    />
+                                  ) : (
+                                    <b>{catatanSelesai}</b>
+                                  )}
                                 </td>
                               </tr>
                               <tr>
@@ -148,15 +309,15 @@ export default function ShowBarang() {
                                 <td>
                                   {isEditing ? (
                                     <input
-                                      type="number"
-                                      name="subtotal"
-                                      value={dataBarang.harga_pembelian}
-                                      onChange={handleInputChange}
+                                      type="text"
+                                      className="form-control"
+                                      value={hargaPembelian}
+                                      onChange={(e) =>
+                                        setHargaPembelian(e.target.value)
+                                      }
                                     />
                                   ) : (
-                                    <b>
-                                      {moneyFormat(dataBarang.harga_pembelian)}
-                                    </b>
+                                    <b>{moneyFormat(hargaPembelian)}</b>
                                   )}
                                 </td>
                               </tr>
@@ -170,7 +331,9 @@ export default function ShowBarang() {
                               </tr>
                               <tr>
                                 <th>Total</th>
-                                <td>8,000,000</td>
+                                <td>
+                                  <b>{moneyFormat(hargaPembelian)}</b>
+                                </td>
                               </tr>
                               <tr>
                                 <th>Payment Status</th>
@@ -188,9 +351,6 @@ export default function ShowBarang() {
                               onClick={handleEditToggle}
                             >
                               {isEditing ? "Save" : "Edit"}
-                            </button>
-                            <button type="button" className="btn btn-primary">
-                              Submit
                             </button>
                           </div>
                         </div>

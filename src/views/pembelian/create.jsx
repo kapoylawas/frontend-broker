@@ -127,7 +127,7 @@ export default function PembelianCreate({ fetchDataSupplier, fetchData }) {
     label: `${sup.name} - ${sup.kode} - ${sup.no_hp}`,
   }));
 
-  // data untuk react select data supplier
+  // data untuk react select data handphone
   const handPhoneOptions = Array.isArray(handPhone)
     ? handPhone.map((han) => ({
         value: han.id,
