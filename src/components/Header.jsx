@@ -150,7 +150,7 @@ export default function header() {
                   <Link className="nav-link" to="/dashboard">
                     <span className="nav-link-icon d-md-none d-lg-inline-block">
                       <img
-                        src="../public/icons/home.png"
+                        src="/icons/home.png"
                         alt="home"
                         width="24"
                         height="24"
@@ -172,7 +172,7 @@ export default function header() {
                   >
                     <span className="nav-link-icon d-md-none d-lg-inline-block">
                       <img
-                        src="../public/icons/invoice.png"
+                        src="/images/invoice.png"
                         alt="supplier"
                         width="24"
                         height="24"
