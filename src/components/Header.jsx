@@ -172,7 +172,7 @@ export default function header() {
                   >
                     <span className="nav-link-icon d-md-none d-lg-inline-block">
                       <img
-                        src="/images/invoice.png"
+                        src="/icons/invoice.png"
                         alt="supplier"
                         width="24"
                         height="24"
