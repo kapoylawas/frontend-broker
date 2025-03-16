@@ -27,6 +27,7 @@ export default function PembelianCreate({ fetchDataSupplier, fetchData }) {
   const [tanggalPembelian, setTanggalPembelian] = useState("");
   const [jenisPembelian, setJenisPembelian] = useState("");
   const [catatan, setCatatan] = useState("");
+  const [namaHandPhone, setNamaHandPhone] = useState("");
   const [errors, setErrors] = useState({});
 
   //state supplier
@@ -78,6 +79,7 @@ export default function PembelianCreate({ fetchDataSupplier, fetchData }) {
       supplier_id: supplierId,
       imei: imei,
       handphone_id: handPhoneId,
+      name_handphone: namaHandPhone,
       harga_pembelian: hargaPembelian,
       sales: sales,
       tanggal_pembelian: tanggalPembelian,
@@ -113,6 +115,7 @@ export default function PembelianCreate({ fetchDataSupplier, fetchData }) {
     setSupplierId("");
     setImei("");
     setHandPhoneId("");
+    setNamaHandPhone("");
     setCatatan("");
     setHargaPembelian("");
     setSales("");
@@ -208,7 +211,7 @@ export default function PembelianCreate({ fetchDataSupplier, fetchData }) {
                   </div>
                   <div className="col-lg-12">
                     <div className="mb-3">
-                      <label className="form-label">Handphone</label>
+                      <label className="form-label">Tipe Handphone</label>
                       <Select
                         options={handPhoneOptions}
                         value={handPhoneOptions.find(
@@ -224,6 +227,22 @@ export default function PembelianCreate({ fetchDataSupplier, fetchData }) {
                       {errors.handphone_id && (
                         <div className="alert alert-danger mt-2">
                           {errors.handphone_id}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="col-lg-12">
+                    <div className="mb-3">
+                      <label className="form-label">Nama Handphone</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={namaHandPhone}
+                        onChange={(e) => setNamaHandPhone(e.target.value)}
+                      />
+                      {errors.name_handphone && (
+                        <div className="alert alert-danger mt-2">
+                          {errors.name_handphone}
                         </div>
                       )}
                     </div>

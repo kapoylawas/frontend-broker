@@ -14,11 +14,14 @@ export default function ShowBarang() {
   const { id } = useParams();
   const token = Cookies.get("token");
 
-  const [dataBarang, setDataBarang] = useState({});
+  // const [dataBarang, setDataBarang] = useState({});
   const [dataSupplier, setDataSupplier] = useState({});
   const [dataHandPhone, setDataHandPhone] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [supplierId, setSupplierId] = useState("");
+  const [namaHandPhone, setNamaHandPhone] = useState("");
+  console.log(namaHandPhone);
+
   const [handPhoneId, setHandPhoneId] = useState("");
   const [imei, setImei] = useState("");
   const [jenisPembelian, setJenisPembelian] = useState("");
@@ -29,7 +32,6 @@ export default function ShowBarang() {
   const [hargaPembelian, setHargaPembelian] = useState("");
   const [supplier, setSupplier] = useState([]);
   const [handPhone, setHandPhone] = useState([]);
-  const [errors, setErrors] = useState({});
 
   const fetchSupplier = async () => {
     Api.defaults.headers.common["Authorization"] = token;
@@ -48,7 +50,7 @@ export default function ShowBarang() {
   const fetchBarangMasuk = async () => {
     Api.defaults.headers.common["Authorization"] = token;
     await Api.get(`/api/barang-masuk/${id}`).then((response) => {
-      setDataBarang(response.data.data);
+      // setDataBarang(response.data.data);
       setDataSupplier(response.data.data.supplier);
       setDataHandPhone(response.data.data.handphone);
       setImei(response.data.data.imei);
@@ -60,6 +62,7 @@ export default function ShowBarang() {
       setHargaPembelian(response.data.data.harga_pembelian);
       setSupplierId(response.data.data.supplier.id);
       setHandPhoneId(response.data.data.handphone.id);
+      setNamaHandPhone(response.data.data.name_handphone);
     });
   };
 
@@ -94,6 +97,7 @@ export default function ShowBarang() {
       imei: imei,
       handphone_id: handPhoneId,
       harga_pembelian: hargaPembelian,
+      name_handphone: namaHandPhone,
       sales: sales,
       tanggal_pembelian: tanggalPembelian,
       jenis_pembelian: jenisPembelian,
@@ -114,7 +118,7 @@ export default function ShowBarang() {
       });
       fetchBarangMasuk(); // Refresh data after update
     } catch (error) {
-      handleErrors(error.response.data, setErrors);
+      handleErrors(error.response.data);
     }
   };
 
@@ -173,13 +177,24 @@ export default function ShowBarang() {
                                 <td>PEMBELIAN LANGSUNG</td>
                               </tr>
                               <tr>
-                                <th>Item</th>
+                                <th>Nama Handphone</th>
                                 <td>
-                                  SAMSUNG GALAXY S22 ULTRA 128GB BURGUNDY (SEIN)
+                                  {isEditing ? (
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={namaHandPhone}
+                                      onChange={(e) =>
+                                        setNamaHandPhone(e.target.value)
+                                      }
+                                    />
+                                  ) : (
+                                    <b>{namaHandPhone}</b>
+                                  )}
                                 </td>
                               </tr>
                               <tr>
-                                <th>Handphone</th>
+                                <th>Tipe Handphone</th>
                                 <td>
                                   {isEditing ? (
                                     <Select
