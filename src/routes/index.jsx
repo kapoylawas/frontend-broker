@@ -9,6 +9,7 @@ import Login from "../views/auth/login.jsx";
 import Dashboard from "../views/dashboard/index.jsx";
 import Pembelian from "../views/pembelian/index.jsx";
 import ShowBarang from "../views/pembelian/showBarang.jsx";
+import Penjualan from "../views/penjualan/index.jsx";
 
 export default function AppRoutes() {
 
@@ -31,6 +32,11 @@ export default function AppRoutes() {
             {/* rout "pembelian" */}
             <Route path="/pembelian" element={
                 token ? <Pembelian /> : <Navigate to="/" replace />
+            } />
+
+            {/* rout "penjualan" */}
+            <Route path="/penjualan" element={
+                token ? <Penjualan /> : <Navigate to="/" replace />
             } />
 
             {/* rout "show barang pembelian" */}

@@ -173,7 +173,7 @@ export default function header() {
                     <span className="nav-link-icon d-md-none d-lg-inline-block">
                       <img
                         src="/icons/invoice.png"
-                        alt="supplier"
+                        alt="barang-masuk"
                         width="24"
                         height="24"
                       />
@@ -184,10 +184,22 @@ export default function header() {
                     <Link className="dropdown-item" to="/pembelian">
                       Pembelian
                     </Link>
-                    <Link className="dropdown-item" to="/pengeluaran">
-                      Pengeluaran
-                    </Link>
                   </div>
+                </li>
+                <li
+                  className={`nav-item ${location.pathname === "/penjualan" ? "active" : ""}`}
+                >
+                  <Link className="nav-link" to="/penjualan">
+                    <span className="nav-link-icon d-md-none d-lg-inline-block">
+                      <img
+                        src="/icons/sale.png"
+                        alt="penjualan"
+                        width="24"
+                        height="24"
+                      />
+                    </span>
+                    <span className="nav-link-title">Penjualan</span>
+                  </Link>
                 </li>
                 <li
                   className={`nav-item dropdown ${location.pathname === "/categories" || location.pathname === "/products" ? "active" : ""}`}
