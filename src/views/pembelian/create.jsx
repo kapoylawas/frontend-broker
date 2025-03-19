@@ -16,8 +16,10 @@ import { handleErrors } from "../../utils/handleErrors";
 import Select from "react-select";
 
 import CreateSupplier from "../../views/pembelian/components/createSupplier";
+import CreateHandPhone from "../../views/pembelian/components/createHandphone";
+import CreateHP from "../../views/pembelian/components/createHandphone";
 
-export default function PembelianCreate({ fetchDataSupplier, fetchData }) {
+export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone, fetchData }) {
   // state
   const [supplierId, setSupplierId] = useState("");
   const [handPhoneId, setHandPhoneId] = useState("");
@@ -133,9 +135,9 @@ export default function PembelianCreate({ fetchDataSupplier, fetchData }) {
   // data untuk react select data handphone
   const handPhoneOptions = Array.isArray(handPhone)
     ? handPhone.map((han) => ({
-        value: han.id,
-        label: `${han.name}`,
-      }))
+      value: han.id,
+      label: `${han.name}`,
+    }))
     : [];
 
   return (
@@ -146,8 +148,12 @@ export default function PembelianCreate({ fetchDataSupplier, fetchData }) {
             fetchDataSupplier={fetchDataSupplier}
             fetchSupplier={fetchSupplier}
           />
+          <CreateHP
+            fetchDataHandPhone={fetchDataHandPhone}
+            fetchHandPhone={fetchHandPhone}
+          />
           <form onSubmit={storeBarangMasuk}>
-            <div className="modal-content">
+            <div className="modal-content mt-2">
               <div className="modal-body">
                 <div className="row">
                   <div className="col-lg-12">

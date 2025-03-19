@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import LayoutAdmin from "../../layouts/admin";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
@@ -79,9 +79,9 @@ export default function ShowBarang() {
 
   const handPhoneOptions = Array.isArray(handPhone)
     ? handPhone.map((han) => ({
-        value: han.id,
-        label: `${han.name}`,
-      }))
+      value: han.id,
+      label: `${han.name}`,
+    }))
     : [];
 
   const handleEditToggle = async () => {
@@ -360,6 +360,14 @@ export default function ShowBarang() {
                             className="d-flex justify-content-end mt-3"
                             style={{ gap: "10px" }}
                           >
+                            <Link className="dropdown-item" to="/pembelian">
+                              <button
+                                type="button"
+                                className="btn btn-danger"
+                              >
+                                Back
+                              </button>
+                            </Link>
                             <button
                               type="button"
                               className="btn btn-primary"

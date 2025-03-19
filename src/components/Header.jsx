@@ -236,39 +236,15 @@ export default function header() {
                   </a>
                   <div className="dropdown-menu">
                     <Link className="dropdown-item" to="/categories">
-                      Categories
+                      Supplier
                     </Link>
                     <Link className="dropdown-item" to="/products">
-                      Products
+                      Jenis HP
+                    </Link>
+                    <Link className="dropdown-item" to="/products">
+                      Aksesoris
                     </Link>
                   </div>
-                </li>
-                <li
-                  className={`nav-item ${location.pathname === "/transactions" ? "active" : ""}`}
-                >
-                  <Link className="nav-link" to="/transactions">
-                    <span className="nav-link-icon d-md-none d-lg-inline-block">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="icon icon-tabler icons-tabler-outline icon-tabler-shopping-cart"
-                      >
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                        <path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                        <path d="M17 17h-11v-14h-2" />
-                        <path d="M6 5l14 1l-1 7h-13" />
-                      </svg>
-                    </span>
-                    <span className="nav-link-title">TRANSACTIONS</span>
-                  </Link>
                 </li>
                 <li
                   className={`nav-item dropdown ${location.pathname === "/sales" || location.pathname === "/profits" ? "active" : ""}`}

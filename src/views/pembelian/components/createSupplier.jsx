@@ -20,7 +20,7 @@ export default function CreateSupplier({ fetchDataSupplier, fetchSupplier }) {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false); // Loading state
 
- 
+
   const modalRef = useRef(null); // Create a ref for the modal
 
   //token
@@ -72,7 +72,7 @@ export default function CreateSupplier({ fetchDataSupplier, fetchSupplier }) {
     <>
       <a
         href="#"
-        className="btn btn-primary d-sm-inline-block"
+        className="btn btn-primary d-sm-inline-block me-3"
         data-bs-toggle="modal"
         data-bs-target="#modal-create-supplier"
       >
@@ -103,7 +103,7 @@ export default function CreateSupplier({ fetchDataSupplier, fetchSupplier }) {
         ref={modalRef}
       >
         <div
-          className="modal-dialog modal-lg modal-dialog-centered"
+          className="modal-dialog modal-lg"
           role="document"
         >
           <form onSubmit={storeSupplier}>
