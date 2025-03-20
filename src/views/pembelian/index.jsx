@@ -19,7 +19,6 @@ import { Link } from "react-router-dom";
 export default function Dashboard() {
   //state products
   const [products, setProducts] = useState([]);
-  console.log("data =>", products);
 
   //define state "pagination"
   const [pagination, setPagination] = useState({

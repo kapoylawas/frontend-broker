@@ -16,7 +16,6 @@ import { handleErrors } from "../../utils/handleErrors";
 import Select from "react-select";
 
 import CreateSupplier from "../../views/pembelian/components/createSupplier";
-import CreateHandPhone from "../../views/pembelian/components/createHandphone";
 import CreateHP from "../../views/pembelian/components/createHandphone";
 
 export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone, fetchData }) {

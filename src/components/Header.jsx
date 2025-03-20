@@ -235,7 +235,7 @@ export default function header() {
                     <span className="nav-link-title">MASTER</span>
                   </a>
                   <div className="dropdown-menu">
-                    <Link className="dropdown-item" to="/categories">
+                    <Link className="dropdown-item" to="/supplier">
                       Supplier
                     </Link>
                     <Link className="dropdown-item" to="/products">

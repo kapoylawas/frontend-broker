@@ -10,6 +10,7 @@ import Dashboard from "../views/dashboard/index.jsx";
 import Pembelian from "../views/pembelian/index.jsx";
 import ShowBarang from "../views/pembelian/showBarang.jsx";
 import Penjualan from "../views/penjualan/index.jsx";
+import Supplier from "../views/supplier/index.jsx";
 
 export default function AppRoutes() {
 
@@ -42,6 +43,11 @@ export default function AppRoutes() {
             {/* rout "show barang pembelian" */}
             <Route path="/showBarang/:id" element={
                 token ? <ShowBarang /> : <Navigate to="/" replace />
+            } />
+
+            {/* rout "supplier" */}
+            <Route path="/supplier" element={
+                token ? <Supplier /> : <Navigate to="/" replace />
             } />
 
         </Routes>
