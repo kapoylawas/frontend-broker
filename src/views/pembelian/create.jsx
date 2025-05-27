@@ -239,9 +239,9 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
                           placeholder="Scan IMEI"
                         />
                       </div>
-                      {errors.imei && (
+                      {errors.kode_negara && (
                         <div className="alert alert-danger mt-2">
-                          {errors.imei}
+                          {errors.kode_negara}
                         </div>
                       )}
                     </div>
