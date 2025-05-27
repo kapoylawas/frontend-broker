@@ -23,6 +23,7 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
   const [supplierId, setSupplierId] = useState("");
   const [handPhoneId, setHandPhoneId] = useState("");
   const [imei, setImei] = useState("");  
+  const [kodeNegara, setKodeNegara] = useState();  
   const [hargaPembelian, setHargaPembelian] = useState("");
   const [sales, setSales] = useState("");
   const [tanggalPembelian, setTanggalPembelian] = useState("");
@@ -87,6 +88,7 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
       //data
       supplier_id: supplierId,
       imei: imei,
+      kode_negara: kodeNegara,
       handphone_id: handPhoneId,
       name_handphone: namaHandPhone,
       harga_pembelian: hargaPembelian,
@@ -123,6 +125,7 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
   const resetForm = () => {
     setSupplierId("");
     setImei("");
+    setKodeNegara("");
     setHandPhoneId("");
     setNamaHandPhone("");
     setCatatan("");
@@ -215,6 +218,25 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
                           onChange={handleChangeImei}
                           placeholder="Scan IMEI"
                           maxLength={8}
+                        />
+                      </div>
+                      {errors.imei && (
+                        <div className="alert alert-danger mt-2">
+                          {errors.imei}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="col-lg-12">
+                    <div className="mb-3">
+                      <label className="form-label">Kode Negara</label>
+                      <div className="input-icon">
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={kodeNegara}
+                          onChange={(e) => setKodeNegara(e.target.value)}
+                          placeholder="Scan IMEI"
                         />
                       </div>
                       {errors.imei && (
