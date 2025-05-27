@@ -22,7 +22,7 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
   // state
   const [supplierId, setSupplierId] = useState("");
   const [handPhoneId, setHandPhoneId] = useState("");
-  const [imei, setImei] = useState("");
+  const [imei, setImei] = useState("");  
   const [hargaPembelian, setHargaPembelian] = useState("");
   const [sales, setSales] = useState("");
   const [tanggalPembelian, setTanggalPembelian] = useState("");
@@ -38,6 +38,14 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
 
   //token
   const token = Cookies.get("token");
+
+  const handleChangeImei = (e) => {
+    const value = e.target.value;
+    // Batasi input maksimal 8 karakter
+    if (value.length <= 8) {
+      setImei(value);
+    }
+  };
 
   //function "fetchSupplier"
   const fetchSupplier = async () => {
@@ -139,6 +147,7 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
     }))
     : [];
 
+ 
   return (
     <>
       <div className="card mb-3">
@@ -203,8 +212,9 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
                           type="text"
                           className="form-control"
                           value={imei}
-                          onChange={(e) => setImei(e.target.value)}
+                          onChange={handleChangeImei}
                           placeholder="Scan IMEI"
+                          maxLength={8}
                         />
                       </div>
                       {errors.imei && (
@@ -216,7 +226,7 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
                   </div>
                   <div className="col-lg-12">
                     <div className="mb-3">
-                      <label className="form-label">Tipe Handphone</label>
+                      <label className="form-label">Merk Handphone</label>
                       <Select
                         options={handPhoneOptions}
                         value={handPhoneOptions.find(
@@ -238,7 +248,7 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
                   </div>
                   <div className="col-lg-12">
                     <div className="mb-3">
-                      <label className="form-label">Nama Handphone</label>
+                      <label className="form-label">Tipe Handphone</label>
                       <input
                         type="text"
                         className="form-control"
