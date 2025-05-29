@@ -23,7 +23,9 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
   const [supplierId, setSupplierId] = useState("");
   const [handPhoneId, setHandPhoneId] = useState("");
   const [imei, setImei] = useState("");  
-  const [kodeNegara, setKodeNegara] = useState();  
+  const [kodeNegara, setKodeNegara] = useState(); 
+  const [warna, setWarna] = useState(); 
+  const [kapasitas, setKapasitas] = useState(); 
   const [hargaPembelian, setHargaPembelian] = useState("");
   const [sales, setSales] = useState("");
   const [tanggalPembelian, setTanggalPembelian] = useState("");
@@ -89,6 +91,8 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
       supplier_id: supplierId,
       imei: imei,
       kode_negara: kodeNegara,
+      warna: warna,
+      kapasitas: kapasitas,
       handphone_id: handPhoneId,
       name_handphone: namaHandPhone,
       harga_pembelian: hargaPembelian,
@@ -126,6 +130,8 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
     setSupplierId("");
     setImei("");
     setKodeNegara("");
+    setWarna("");
+    setKapasitas("");
     setHandPhoneId("");
     setNamaHandPhone("");
     setCatatan("");
@@ -280,6 +286,38 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
                       {errors.name_handphone && (
                         <div className="alert alert-danger mt-2">
                           {errors.name_handphone}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="col-lg-12">
+                    <div className="mb-3">
+                      <label className="form-label">Warna</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={warna}
+                        onChange={(e) => setWarna(e.target.value)}
+                      />
+                      {errors.warna && (
+                        <div className="alert alert-danger mt-2">
+                          {errors.warna}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="col-lg-12">
+                    <div className="mb-3">
+                      <label className="form-label">Kapasitas</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={kapasitas}
+                        onChange={(e) => setKapasitas(e.target.value)}
+                      />
+                      {errors.kapasitas && (
+                        <div className="alert alert-danger mt-2">
+                          {errors.kapasitas}
                         </div>
                       )}
                     </div>
