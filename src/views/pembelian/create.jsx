@@ -242,7 +242,7 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
                           className="form-control"
                           value={kodeNegara}
                           onChange={(e) => setKodeNegara(e.target.value)}
-                          placeholder="Scan IMEI"
+                          placeholder="Kode Negara"
                         />
                       </div>
                       {errors.kode_negara && (
