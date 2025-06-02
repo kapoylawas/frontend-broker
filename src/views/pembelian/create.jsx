@@ -18,21 +18,28 @@ import Select from "react-select";
 import CreateSupplier from "../../views/pembelian/components/createSupplier";
 import CreateHP from "../../views/pembelian/components/createHandphone";
 
-export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone, fetchData }) {
+export default function PembelianCreate({
+  fetchDataSupplier,
+  fetchDataHandPhone,
+  fetchData,
+}) {
   // state
   const [supplierId, setSupplierId] = useState("");
   const [handPhoneId, setHandPhoneId] = useState("");
-  const [imei, setImei] = useState("");  
-  const [kodeNegara, setKodeNegara] = useState(); 
-  const [warna, setWarna] = useState(); 
-  const [kapasitas, setKapasitas] = useState(); 
+  const [imei, setImei] = useState("");
+  const [kodeNegara, setKodeNegara] = useState();
+  const [warna, setWarna] = useState();
+  const [kapasitas, setKapasitas] = useState();
   const [hargaPembelian, setHargaPembelian] = useState("");
   const [sales, setSales] = useState("");
   const [tanggalPembelian, setTanggalPembelian] = useState("");
   const [jenisPembelian, setJenisPembelian] = useState("");
   const [catatan, setCatatan] = useState("");
   const [namaHandPhone, setNamaHandPhone] = useState("");
+  const [selectedHandphoneId, setSelectedHandphoneId] = useState("");
   const [errors, setErrors] = useState({});
+  const [suggestions, setSuggestions] = useState([]);
+  const [allHandphones, setAllHandphones] = useState([]); // Menyimpan semua handphone
 
   //state supplier
   const [supplier, setSupplier] = useState([]);
@@ -47,6 +54,124 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
     // Batasi input maksimal 8 karakter
     if (value.length <= 8) {
       setImei(value);
+    }
+  };
+
+  useEffect(() => {
+    const fetchHandphones = async () => {
+      try {
+        Api.defaults.headers.common["Authorization"] = token;
+        const response = await Api.get("/api/tipe-hand-phone");
+
+        // Normalisasi data (hapus duplikat berdasarkan nama)
+        const uniqueHandphones = response.data.data.reduce((acc, current) => {
+          const x = acc.find(
+            (item) =>
+              item.name.trim().toLowerCase() ===
+              current.name.trim().toLowerCase()
+          );
+          if (!x) {
+            return acc.concat([current]);
+          } else {
+            return acc;
+          }
+        }, []);
+
+        setAllHandphones(uniqueHandphones);
+      } catch (error) {
+        console.error("Error fetching handphones:", error);
+      }
+    };
+
+    fetchHandphones();
+  }, []);
+
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setNamaHandPhone(value);
+
+    // Hanya reset selectedHandphoneId jika input berbeda dengan yang terpilih
+    if (
+      selectedHandphoneId &&
+      !allHandphones.some(
+        (item) => item.id === selectedHandphoneId && item.name === value
+      )
+    ) {
+      setSelectedHandphoneId(null);
+    }
+
+    // Cari exact match terlebih dahulu
+    const exactMatch = allHandphones.find(
+      (item) => item.name.trim().toLowerCase() === value.trim().toLowerCase()
+    );
+
+    if (exactMatch) {
+      setSuggestions([exactMatch]);
+    } else {
+      // Jika tidak ada exact match, cari partial match
+      const filteredSuggestions = allHandphones.filter((item) =>
+        item.name.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestions(filteredSuggestions);
+    }
+  };
+
+  const handleSuggestionClick = (id, name) => {
+    setNamaHandPhone(name);
+    setSelectedHandphoneId(id);
+    setSuggestions([]); // Hapus saran setelah pemilihan
+  };
+
+  const addNewHandphoneType = async (name) => {
+    try {
+      // Normalisasi nama untuk pengecekan (trim dan lowercase)
+      const normalizedInput = name.trim().toLowerCase();
+
+      // Cek duplikat di data lokal sebelum mengirim ke API
+      const isDuplicate = allHandphones.some(
+        (item) => item.name.trim().toLowerCase() === normalizedInput
+      );
+
+      if (isDuplicate) {
+        throw new Error("Tipe handphone ini sudah terdaftar");
+      }
+
+      Api.defaults.headers.common["Authorization"] = token;
+      const response = await Api.post("/api/tipe-hand-phone", { name });
+      return response.data.data;
+    } catch (error) {
+      console.error("Error adding new handphone type:", error);
+      throw error;
+    }
+  };
+
+  const handleHandphoneTypeSubmit = async (e) => {
+    e.preventDefault();
+
+    const trimmedName = namaHandPhone.trim();
+    if (!trimmedName) return;
+
+    // Cek exact match
+    const exactMatch = allHandphones.find(
+      (item) => item.name.trim().toLowerCase() === trimmedName.toLowerCase()
+    );
+
+    if (exactMatch) {
+      setSelectedHandphoneId(exactMatch.id);
+      setNamaHandPhone(exactMatch.name);
+      toast.success(`Menggunakan tipe yang sudah ada: ${exactMatch.name}`);
+      return;
+    }
+
+    // Jika tidak ada exact match, lanjutkan penambahan baru
+    try {
+      const newHandphone = await addNewHandphoneType(trimmedName);
+      setAllHandphones([...allHandphones, newHandphone]);
+      setSelectedHandphoneId(newHandphone.id);
+      setNamaHandPhone(newHandphone.name);
+      toast.success("Tipe handphone berhasil ditambahkan!");
+    } catch (error) {
+      // Handle error
     }
   };
 
@@ -94,7 +219,7 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
       warna: warna,
       kapasitas: kapasitas,
       handphone_id: handPhoneId,
-      name_handphone: namaHandPhone,
+      namehandphone_id: selectedHandphoneId,
       harga_pembelian: hargaPembelian,
       sales: sales,
       tanggal_pembelian: tanggalPembelian,
@@ -151,12 +276,18 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
   // data untuk react select data handphone
   const handPhoneOptions = Array.isArray(handPhone)
     ? handPhone.map((han) => ({
-      value: han.id,
-      label: `${han.name}`,
-    }))
+        value: han.id,
+        label: `${han.name}`,
+      }))
     : [];
 
- 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleHandphoneTypeSubmit(e);
+    }
+  };
+
   return (
     <>
       <div className="card mb-3">
@@ -277,17 +408,77 @@ export default function PembelianCreate({ fetchDataSupplier, fetchDataHandPhone,
                   <div className="col-lg-12">
                     <div className="mb-3">
                       <label className="form-label">Tipe Handphone</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={namaHandPhone}
-                        onChange={(e) => setNamaHandPhone(e.target.value)}
-                      />
-                      {errors.name_handphone && (
+                      <div className="input-group">
+                        <input
+                          type="text"
+                          className={`form-control ${
+                            errors.handphone_type ? "is-invalid" : ""
+                          }`}
+                          value={namaHandPhone}
+                          onChange={handleChange}
+                          onBlur={handleHandphoneTypeSubmit}
+                          onKeyDown={handleKeyDown}
+                          placeholder="Ketik atau pilih tipe handphone"
+                        />
+                        {!selectedHandphoneId && namaHandPhone.trim() && (
+                          <button
+                            className="btn btn-primary"
+                            type="button"
+                            onClick={handleHandphoneTypeSubmit}
+                            disabled={suggestions.some(
+                              (item) =>
+                                item.name.trim().toLowerCase() ===
+                                namaHandPhone.trim().toLowerCase()
+                            )}
+                          >
+                            {suggestions.some(
+                              (item) =>
+                                item.name.trim().toLowerCase() ===
+                                namaHandPhone.trim().toLowerCase()
+                            )
+                              ? "Data sudah ada"
+                              : "Tambah Baru"}
+                          </button>
+                        )}
+                      </div>
+
+                      {errors.handphone_type && (
                         <div className="alert alert-danger mt-2">
-                          {errors.name_handphone}
+                          {errors.handphone_type}
                         </div>
                       )}
+
+                      {namaHandPhone && suggestions.length > 0 && (
+                        <div className="mt-2">
+                          <div className="text-muted small mb-1">
+                            Pilih dari daftar:
+                          </div>
+                          <ul className="list-group">
+                            {suggestions.map((item) => (
+                              <li
+                                key={item.id}
+                                className="list-group-item list-group-item-action"
+                                onClick={() =>
+                                  handleSuggestionClick(item.id, item.name)
+                                }
+                                style={{ cursor: "pointer" }}
+                              >
+                                {item.name}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {namaHandPhone &&
+                        suggestions.length === 0 &&
+                        allHandphones.length > 0 && (
+                          <div className="text-muted mt-1">
+                            {selectedHandphoneId
+                              ? `Menggunakan tipe: ${namaHandPhone}`
+                              : "Tekan Enter untuk menambahkan tipe baru"}
+                          </div>
+                        )}
                     </div>
                   </div>
                   <div className="col-lg-12">
