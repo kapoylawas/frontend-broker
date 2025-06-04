@@ -15,10 +15,12 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import DeleteButton from "../../components/DeleteButton";
 import { Link } from "react-router-dom";
+import Barcode from "./components/Barcode";
 
 export default function Dashboard() {
   //state products
   const [products, setProducts] = useState([]);
+  console.log("data", products);
 
   //define state "pagination"
   const [pagination, setPagination] = useState({
@@ -155,7 +157,16 @@ export default function Dashboard() {
                                   index +
                                   1}
                               </td>
-                              <td data-label="imei">{product.imei}</td>
+                              <td data-label="imei">
+                                <Barcode
+                                  value={product.imei.imei}
+                                  format={"CODE39"}
+                                  lineColor={"#000"}
+                                  width={1}
+                                  height={20}
+                                  fontSize={10}
+                                />
+                              </td>
                               <td data-label="Supplier Name">
                                 <div className="d-flex py-1 align-items-center">
                                   <div className="flex-fill">
@@ -201,9 +212,7 @@ export default function Dashboard() {
                                 </div>
                                 <br />
                                 <div className="btn-list flex-nowrap">
-                                  <Link
-                                    to={`/showBarang/${product.id}`}
-                                  >
+                                  <Link to={`/showBarang/${product.id}`}>
                                     <button className="btn btn-info rounded">
                                       Lihat
                                     </button>

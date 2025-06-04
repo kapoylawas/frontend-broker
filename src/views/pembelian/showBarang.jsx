@@ -20,7 +20,6 @@ export default function ShowBarang() {
   const [isEditing, setIsEditing] = useState(false);
   const [supplierId, setSupplierId] = useState("");
   const [namaHandPhone, setNamaHandPhone] = useState("");
-  console.log(namaHandPhone);
 
   const [handPhoneId, setHandPhoneId] = useState("");
   const [imei, setImei] = useState("");
