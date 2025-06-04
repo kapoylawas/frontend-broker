@@ -26,7 +26,6 @@ export default function PembelianCreate({
   // state
   const [supplierId, setSupplierId] = useState("");
   const [handPhoneId, setHandPhoneId] = useState("");
-  const [imei, setImei] = useState("");
   const [kodeNegara, setKodeNegara] = useState();
   const [warna, setWarna] = useState();
   const [kapasitas, setKapasitas] = useState();
@@ -35,11 +34,18 @@ export default function PembelianCreate({
   const [tanggalPembelian, setTanggalPembelian] = useState("");
   const [jenisPembelian, setJenisPembelian] = useState("");
   const [catatan, setCatatan] = useState("");
+
+  const [imei, setImei] = useState("");
+  const [selectImeiId, setSelectImeiId] = useState("");
+  const [suggestionsImei, setSuggestionsImei] = useState([]);
+  const [allImei, setAllImei] = useState([]);
+
   const [namaHandPhone, setNamaHandPhone] = useState("");
   const [selectedHandphoneId, setSelectedHandphoneId] = useState("");
-  const [errors, setErrors] = useState({});
   const [suggestions, setSuggestions] = useState([]);
   const [allHandphones, setAllHandphones] = useState([]); // Menyimpan semua handphone
+
+  const [errors, setErrors] = useState({});
 
   //state supplier
   const [supplier, setSupplier] = useState([]);
@@ -49,14 +55,140 @@ export default function PembelianCreate({
   //token
   const token = Cookies.get("token");
 
+  // sugest type imei
+  // get data imei all
+  useEffect(() => {
+    const fetchImei = async () => {
+      try {
+        // Pastikan token tersedia
+        if (!token) {
+          console.error("Token tidak tersedia");
+          return;
+        }
+
+        Api.defaults.headers.common["Authorization"] = token;
+        const response = await Api.get("/api/imei");
+
+        // Pastikan response.data.data ada dan merupakan array
+        if (response.data && Array.isArray(response.data.data)) {
+          const uniqueImei = response.data.data.reduce((acc, current) => {
+            // Tambahkan pengecekan jika current atau current.imei tidak ada
+            if (!current || !current.imei) return acc;
+
+            const existing = acc.find(item =>
+              item.imei && current.imei &&
+              item.imei.trim().toLowerCase() === current.imei.trim().toLowerCase()
+            );
+            return existing ? acc : [...acc, current];
+          }, []);
+
+          setAllImei(uniqueImei);
+        } else {
+          console.error("Data IMEI tidak valid:", response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching imei:", error);
+        // Tambahkan penanganan error lebih baik
+        if (error.response) {
+          console.error("Response error:", error.response.data);
+        }
+      }
+    };
+
+    fetchImei();
+  }, [token]); // 
+
   const handleChangeImei = (e) => {
     const value = e.target.value;
-    // Batasi input maksimal 8 karakter
-    if (value.length <= 8) {
-      setImei(value);
+    setImei(value);
+
+    // Hanya reset selectedImeiId jika input berbeda dengan yang terpilih
+    if (
+      selectImeiId &&
+      !allImei.some(
+        (item) => item.id === selectImeiId && item.imei === value
+      )
+    ) {
+      setSelectImeiId(null);
+    }
+
+    // Cari exact match terlebih dahulu
+    const exactMatch = allImei.find(
+      (item) => item.imei.trim().toLowerCase() === value.trim().toLowerCase()
+    );
+
+    if (exactMatch) {
+      setSuggestionsImei([exactMatch]);
+    } else {
+      // Jika tidak ada exact match, cari partial match
+      const filteredSuggestionsImei = allImei.filter((item) =>
+        item.imei.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestionsImei(filteredSuggestionsImei);
     }
   };
 
+  const handleSuggestionClickImei = (id, imei) => {
+    setImei(imei);
+    setSelectImeiId(id);
+    setSuggestionsImei([]); // Hapus saran setelah pemilihan
+  };
+
+  const addNewImei = async (imei) => {
+    try {
+      // Normalisasi nama untuk pengecekan (trim dan lowercase)
+      const normalizedInput = imei.trim().toLowerCase();
+
+      // Cek duplikat di data lokal sebelum mengirim ke API
+      const isDuplicate = allImei.some(
+        (item) => item.imei.trim().toLowerCase() === normalizedInput
+      );
+
+      if (isDuplicate) {
+        throw new Error("Tipe imei ini sudah terdaftar");
+      }
+
+      Api.defaults.headers.common["Authorization"] = token;
+      const response = await Api.post("/api/imei", { imei });
+      return response.data.data;
+    } catch (error) {
+      console.error("Error adding new handphone type:", error);
+      throw error;
+    }
+  };
+
+  const handleImeiTypeSubmit = async (e) => {
+    e.preventDefault();
+
+    const trimmedName = imei.trim();
+    if (!trimmedName) return;
+
+    // Cek exact match
+    const exactMatch = allImei.find(
+      (item) => item.imei.trim().toLowerCase() === trimmedName.toLowerCase()
+    );
+
+    if (exactMatch) {
+      setSelectImeiId(exactMatch.id);
+      setImei(exactMatch.imei);
+      toast.success(`Menggunakan tipe yang sudah ada: ${exactMatch.imei}`);
+      return;
+    }
+
+    // Jika tidak ada exact match, lanjutkan penambahan baru
+    try {
+      const newImei = await addNewImei(trimmedName);
+      setAllImei([...allImei, newImei]);
+      setSelectImeiId(newImei.id);
+      setImei(newImei.imei);
+      toast.success("Imei berhasil ditambahkan!");
+    } catch (error) {
+      // Handle error
+    }
+  };
+  // end sugest
+
+  // sugest type handphone
   useEffect(() => {
     const fetchHandphones = async () => {
       try {
@@ -174,6 +306,8 @@ export default function PembelianCreate({
       // Handle error
     }
   };
+  // end sugest
+
 
   //function "fetchSupplier"
   const fetchSupplier = async () => {
@@ -214,7 +348,7 @@ export default function PembelianCreate({
     await Api.post("/api/barang-masuk", {
       //data
       supplier_id: supplierId,
-      imei: imei,
+      imei_id: selectImeiId,
       kode_negara: kodeNegara,
       warna: warna,
       kapasitas: kapasitas,
@@ -276,10 +410,17 @@ export default function PembelianCreate({
   // data untuk react select data handphone
   const handPhoneOptions = Array.isArray(handPhone)
     ? handPhone.map((han) => ({
-        value: han.id,
-        label: `${han.name}`,
-      }))
+      value: han.id,
+      label: `${han.name}`,
+    }))
     : [];
+
+  const handleKeyDownImei = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleImeiTypeSubmit(e);
+    }
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -329,39 +470,83 @@ export default function PembelianCreate({
                   <div className="col-lg-12">
                     <div className="mb-3">
                       <label className="form-label">IMEI</label>
-                      <div className="input-icon">
-                        <span className="input-icon-addon">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="icon"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            strokeWidth="2"
-                            stroke="currentColor"
-                            fill="none"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
-                            <path d="M21 21l-6 -6" />
-                          </svg>
-                        </span>
+                      <div className="input-group">
                         <input
                           type="text"
-                          className="form-control"
+                          className={`form-control ${errors.imei_type ? "is-invalid" : ""}`}
                           value={imei}
-                          onChange={handleChangeImei}
-                          placeholder="Scan IMEI"
+                          onChange={(e) => {
+                            // Batasi input maksimal 8 karakter
+                            const value = e.target.value;
+                            if (value.length <= 8) {
+                              setImei(value);
+                              handleChangeImei(e); // Tetap jalankan handleChangeImei untuk suggestions
+                            }
+                          }}
                           maxLength={8}
+                          onBlur={handleImeiTypeSubmit}
+                          onKeyDown={handleKeyDownImei}
+                          placeholder="Ketik atau pilih imei"
                         />
+                        {!selectImeiId && imei.trim() && (
+                          <button
+                            className="btn btn-primary"
+                            type="button"
+                            onClick={handleImeiTypeSubmit}
+                            disabled={suggestionsImei.some(
+                              (item) =>
+                                item.imei.trim().toLowerCase() ===
+                                imei.trim().toLowerCase()
+                            )}
+                          >
+                            {suggestionsImei.some(
+                              (item) =>
+                                item.imei.trim().toLowerCase() ===
+                                imei.trim().toLowerCase()
+                            )
+                              ? "Data sudah ada"
+                              : "Tambah Baru"}
+                          </button>
+                        )}
                       </div>
+
                       {errors.imei && (
                         <div className="alert alert-danger mt-2">
                           {errors.imei}
                         </div>
                       )}
+
+                      {imei && suggestionsImei.length > 0 && (
+                        <div className="mt-2">
+                          <div className="text-muted small mb-1">
+                            Pilih dari daftar:
+                          </div>
+                          <ul className="list-group">
+                            {suggestionsImei.map((item) => (
+                              <li
+                                key={item.id}
+                                className="list-group-item list-group-item-action"
+                                onClick={() =>
+                                  handleSuggestionClickImei(item.id, item.imei)
+                                }
+                                style={{ cursor: "pointer" }}
+                              >
+                                {item.imei}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {imei &&
+                        suggestionsImei.length === 0 &&
+                        allImei.length > 0 && (
+                          <div className="text-muted mt-1">
+                            {selectImeiId
+                              ? `Menggunakan tipe: ${imei}`
+                              : "Tekan Enter untuk menambahkan tipe baru"}
+                          </div>
+                        )}
                     </div>
                   </div>
                   <div className="col-lg-12">
@@ -411,9 +596,8 @@ export default function PembelianCreate({
                       <div className="input-group">
                         <input
                           type="text"
-                          className={`form-control ${
-                            errors.handphone_type ? "is-invalid" : ""
-                          }`}
+                          className={`form-control ${errors.handphone_type ? "is-invalid" : ""
+                            }`}
                           value={namaHandPhone}
                           onChange={handleChange}
                           onBlur={handleHandphoneTypeSubmit}
