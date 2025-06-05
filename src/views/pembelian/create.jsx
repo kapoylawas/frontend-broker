@@ -26,7 +26,6 @@ export default function PembelianCreate({
   // state
   const [supplierId, setSupplierId] = useState("");
   const [handPhoneId, setHandPhoneId] = useState("");
-  const [kodeNegara, setKodeNegara] = useState();
   const [warna, setWarna] = useState();
   const [kapasitas, setKapasitas] = useState();
   const [hargaPembelian, setHargaPembelian] = useState("");
@@ -39,6 +38,13 @@ export default function PembelianCreate({
   const [selectImeiId, setSelectImeiId] = useState("");
   const [suggestionsImei, setSuggestionsImei] = useState([]);
   const [allImei, setAllImei] = useState([]);
+
+  const [kodeNegara, setKodeNegara] = useState();
+  const [selectKodeNegaraId, setSelectKodeNegaraId] = useState("");
+
+  const [suggestionsKodeNegara, setSuggestionsKodeNegara] = useState([]);
+  const [allKodeNegara, setAllKodeNegara] = useState([]);
+
 
   const [namaHandPhone, setNamaHandPhone] = useState("");
   const [selectedHandphoneId, setSelectedHandphoneId] = useState("");
@@ -55,7 +61,137 @@ export default function PembelianCreate({
   //token
   const token = Cookies.get("token");
 
-  // sugest type imei
+  {/* sugest type kode negara */ }
+  useEffect(() => {
+    const fetchKodeNegara = async () => {
+      try {
+        if (!token) {
+          console.error("Token tidak tersedia");
+          return;
+        }
+
+        Api.defaults.headers.common["Authorization"] = token;
+        const response = await Api.get("/api/kode-negara");
+
+        if (response.data && Array.isArray(response.data.data)) {
+          const uniqueKodeNegara = response.data.data.reduce((acc, current) => {
+            if (!current || !current.name) return acc;
+
+            const existing = acc.find(item =>
+              item && item.name && current.name &&
+              item.name.trim().toLowerCase() === current.name.trim().toLowerCase()
+            );
+            return existing ? acc : [...acc, current];
+          }, []);
+
+          setAllKodeNegara(uniqueKodeNegara);
+        } else {
+          console.error("Data Kode Negara tidak valid:", response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching kode negara:", error);
+        if (error.response) {
+          console.error("Response error:", error.response.data);
+        }
+      }
+    };
+
+    fetchKodeNegara();
+  }, [token]);
+
+  const handleChangeKodeNegara = (e) => {
+    const value = e.target.value;
+    setKodeNegara(value);
+
+    // Hanya reset selectedKodenegaraID jika input berbeda dengan yang terpilih
+    if (
+      selectKodeNegaraId &&
+      !allKodeNegara.some(
+        (item) => item && item.id === selectKodeNegaraId && item.name === value
+      )
+    ) {
+      setSelectKodeNegaraId(null);
+    }
+
+    // Cari exact match terlebih dahulu
+    const exactMatch = allKodeNegara.find(
+      (item) => item && item.name && item.name.trim().toLowerCase() === value.trim().toLowerCase()
+    );
+
+    if (exactMatch) {
+      setSuggestionsKodeNegara([exactMatch]);
+    } else {
+      // Jika tidak ada exact match, cari partial match
+      const filteredSuggestionsKodeNegara = allKodeNegara.filter((item) =>
+        item && item.name && item.name.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestionsKodeNegara(filteredSuggestionsKodeNegara);
+    }
+  };
+
+  const handleSuggestionClickKodeNegara = (id, name) => {
+    if (name) {
+      setKodeNegara(name);
+      setSelectKodeNegaraId(id);
+      setSuggestionsKodeNegara([]);
+    }
+  };
+
+  const addNewKodeNegara = async (name) => {
+    try {
+      // Normalisasi nama untuk pengecekan (trim dan lowercase)
+      const normalizedInput = name.trim().toLowerCase();
+
+      // Cek duplikat di data lokal sebelum mengirim ke API
+      const isDuplicate = allKodeNegara.some(
+        (item) => item.name.trim().toLowerCase() === normalizedInput
+      );
+
+      if (isDuplicate) {
+        throw new Error("Tipe kode negara ini sudah terdaftar");
+      }
+
+      Api.defaults.headers.common["Authorization"] = token;
+      const response = await Api.post("/api/kode-negara", { name });
+      return response.data.data;
+    } catch (error) {
+      console.error("Error adding new kode negara type:", error);
+      throw error;
+    }
+  };
+
+  const handleKodeNegaraTypeSubmit = async (e) => {
+    e.preventDefault();
+
+    const trimmedName = kodeNegara.trim();
+    if (!trimmedName) return;
+
+    // Cek exact match
+    const exactMatch = allKodeNegara.find(
+      (item) => item.name.trim().toLowerCase() === trimmedName.toLowerCase()
+    );
+
+    if (exactMatch) {
+      setSelectKodeNegaraId(exactMatch.id);
+      setKodeNegara(exactMatch.name);
+      toast.success(`Menggunakan tipe yang sudah ada: ${exactMatch.name}`);
+      return;
+    }
+
+    // Jika tidak ada exact match, lanjutkan penambahan baru
+    try {
+      const newKodeNegara = await addNewKodeNegara(trimmedName);
+      setAllKodeNegara([...allKodeNegara, newKodeNegara]);
+      setSelectKodeNegaraId(newKodeNegara.id);
+      setKodeNegara(newKodeNegara.name);
+      toast.success("Kode Negara berhasil ditambahkan!");
+    } catch (error) {
+      // Handle error
+    }
+  };
+  {/* sugest type kode negara */ }
+
+  {/* sugest type imei */ }
   // get data imei all
   useEffect(() => {
     const fetchImei = async () => {
@@ -96,7 +232,7 @@ export default function PembelianCreate({
     };
 
     fetchImei();
-  }, [token]); // 
+  }, [token]);
 
   const handleChangeImei = (e) => {
     const value = e.target.value;
@@ -186,9 +322,9 @@ export default function PembelianCreate({
       // Handle error
     }
   };
-  // end sugest
+  {/* end sugest type imei */ }
 
-  // sugest type handphone
+  {/* sugest type tipe handphone */ }
   useEffect(() => {
     const fetchHandphones = async () => {
       try {
@@ -306,7 +442,7 @@ export default function PembelianCreate({
       // Handle error
     }
   };
-  // end sugest
+  {/* end sugest type handphone */ }
 
 
   //function "fetchSupplier"
@@ -349,7 +485,7 @@ export default function PembelianCreate({
       //data
       supplier_id: supplierId,
       imei_id: selectImeiId,
-      kode_negara: kodeNegara,
+      kodenegara_id: selectKodeNegaraId,
       warna: warna,
       kapasitas: kapasitas,
       handphone_id: handPhoneId,
@@ -419,6 +555,13 @@ export default function PembelianCreate({
     if (e.key === "Enter") {
       e.preventDefault();
       handleImeiTypeSubmit(e);
+    }
+  };
+
+  const handleKeyDownKodeNegara = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleKodeNegaraTypeSubmit(e);
     }
   };
 
@@ -552,22 +695,63 @@ export default function PembelianCreate({
                   <div className="col-lg-12">
                     <div className="mb-3">
                       <label className="form-label">Kode Negara</label>
-                      <div className="input-icon">
+                      <div className="input-group">
                         <input
                           type="text"
-                          className="form-control"
-                          value={kodeNegara}
-                          onChange={(e) => setKodeNegara(e.target.value)}
-                          placeholder="Kode Negara"
+                          className={`form-control ${errors.name_type ? "is-invalid" : ""}`}
+                          value={kodeNegara || ''}  // Fallback to empty string if undefined
+                          onChange={handleChangeKodeNegara}
+                          maxLength={8}
+                          onBlur={handleKodeNegaraTypeSubmit}
+                          onKeyDown={handleKeyDownKodeNegara}
+                          placeholder="Ketik atau pilih kode negara"
                         />
+                        {!selectKodeNegaraId && kodeNegara?.trim() && (
+                          <button
+                            className="btn btn-primary"
+                            type="button"
+                            onClick={handleKodeNegaraTypeSubmit}
+                            disabled={suggestionsKodeNegara.some(
+                              (item) => item?.name?.trim().toLowerCase() === kodeNegara.trim().toLowerCase()
+                            )}
+                          >
+                            {suggestionsKodeNegara.some(
+                              (item) => item?.name?.trim().toLowerCase() === kodeNegara.trim().toLowerCase()
+                            )
+                              ? "Data sudah ada"
+                              : "Tambah Baru"}
+                          </button>
+                        )}
                       </div>
+
                       {errors.kode_negara && (
                         <div className="alert alert-danger mt-2">
                           {errors.kode_negara}
                         </div>
                       )}
+
+                      {kodeNegara && suggestionsKodeNegara?.length > 0 && (
+                        <div className="mt-2">
+                          <div className="text-muted small mb-1">
+                            Pilih dari daftar:
+                          </div>
+                          <ul className="list-group">
+                            {suggestionsKodeNegara.map((item) => (
+                              <li
+                                key={item?.id}
+                                className="list-group-item list-group-item-action"
+                                onClick={() => handleSuggestionClickKodeNegara(item?.id, item?.name)}
+                                style={{ cursor: "pointer" }}
+                              >
+                                {item?.name || 'Unknown'}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   </div>
+
                   <div className="col-lg-12">
                     <div className="mb-3">
                       <label className="form-label">Merk Handphone</label>
@@ -813,9 +997,9 @@ export default function PembelianCreate({
                 </button>
               </div>
             </div>
-          </form>
-        </div>
-      </div>
+          </form >
+        </div >
+      </div >
     </>
   );
 }
