@@ -17,6 +17,7 @@ import Select from "react-select";
 
 import CreateSupplier from "../../views/pembelian/components/createSupplier";
 import CreateHP from "../../views/pembelian/components/createHandphone";
+import { all } from "axios";
 
 export default function PembelianCreate({
   fetchDataSupplier,
@@ -26,7 +27,6 @@ export default function PembelianCreate({
   // state
   const [supplierId, setSupplierId] = useState("");
   const [handPhoneId, setHandPhoneId] = useState("");
-  const [warna, setWarna] = useState();
   const [kapasitas, setKapasitas] = useState();
   const [hargaPembelian, setHargaPembelian] = useState("");
   const [sales, setSales] = useState("");
@@ -41,10 +41,13 @@ export default function PembelianCreate({
 
   const [kodeNegara, setKodeNegara] = useState();
   const [selectKodeNegaraId, setSelectKodeNegaraId] = useState("");
-
   const [suggestionsKodeNegara, setSuggestionsKodeNegara] = useState([]);
   const [allKodeNegara, setAllKodeNegara] = useState([]);
 
+  const [warna, setWarna] = useState();
+  const [selectWarnaId, setSelectWarnaId] = useState("");
+  const [suggestionsWarna, setSuggestionsWarna] = useState([]);
+  const [allWarna, setAllWarna] = useState([]);
 
   const [namaHandPhone, setNamaHandPhone] = useState("");
   const [selectedHandphoneId, setSelectedHandphoneId] = useState("");
@@ -60,6 +63,136 @@ export default function PembelianCreate({
 
   //token
   const token = Cookies.get("token");
+
+  {/* sugest warna */ }
+  useEffect(() => {
+    const fetchWarna = async () => {
+      try {
+        if (!token) {
+          console.error("Token tidak tersedia");
+          return;
+        }
+
+        Api.defaults.headers.common["Authorization"] = token;
+        const response = await Api.get("/api/warna");
+
+        if (response.data && Array.isArray(response.data.data)) {
+          const uniqueWarna = response.data.data.reduce((acc, current) => {
+            if (!current || !current.name) return acc;
+
+            const existing = acc.find(item =>
+              item && item.name && current.name &&
+              item.name.trim().toLowerCase() === current.name.trim().toLowerCase()
+            );
+            return existing ? acc : [...acc, current];
+          }, []);
+
+          setAllWarna(uniqueWarna);
+        } else {
+          console.error("Data Warna tidak valid:", response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching Warna:", error);
+        if (error.response) {
+          console.error("Response error:", error.response.data);
+        }
+      }
+    };
+
+    fetchWarna();
+  }, [token]);
+
+  const handleChangeWarna = (e) => {
+    const value = e.target.value;
+    setWarna(value);
+
+    // Hanya reset selectedWarnaID jika input berbeda dengan yang terpilih
+    if (
+      selectWarnaId &&
+      !allWarna.some(
+        (item) => item && item.id === selectWarnaId && item.name === value
+      )
+    ) {
+      setSelectWarnaId(null);
+    }
+
+    // Cari exact match terlebih dahulu
+    const exactMatch = allWarna.find(
+      (item) => item && item.name && item.name.trim().toLowerCase() === value.trim().toLowerCase()
+    );
+
+    if (exactMatch) {
+      setSuggestionsWarna([exactMatch]);
+    } else {
+      // Jika tidak ada exact match, cari partial match
+      const filteredSuggestionsWarna = allWarna.filter((item) =>
+        item && item.name && item.name.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestionsWarna(filteredSuggestionsWarna);
+    }
+  };
+
+  const handleSuggestionClickWarna = (id, name) => {
+    if (name) {
+      setWarna(name);
+      setSelectWarnaId(id);
+      setSuggestionsWarna([]);
+    }
+  };
+
+  const addNewWarna = async (name) => {
+    try {
+      // Normalisasi nama untuk pengecekan (trim dan lowercase)
+      const normalizedInput = name.trim().toLowerCase();
+
+      // Cek duplikat di data lokal sebelum mengirim ke API
+      const isDuplicate = allWarna.some(
+        (item) => item.name.trim().toLowerCase() === normalizedInput
+      );
+
+      if (isDuplicate) {
+        throw new Error("Tipe warna ini sudah terdaftar");
+      }
+
+      Api.defaults.headers.common["Authorization"] = token;
+      const response = await Api.post("/api/warna", { name });
+      return response.data.data;
+    } catch (error) {
+      console.error("Error adding new warna type:", error);
+      throw error;
+    }
+  };
+
+  const handleWarnaTypeSubmit = async (e) => {
+    e.preventDefault();
+
+    const trimmedName = warna.trim();
+    if (!trimmedName) return;
+
+    // Cek exact match
+    const exactMatch = allWarna.find(
+      (item) => item.name.trim().toLowerCase() === trimmedName.toLowerCase()
+    );
+
+    if (exactMatch) {
+      setSelectKodeNegaraId(exactMatch.id);
+      setKodeNegara(exactMatch.name);
+      toast.success(`Menggunakan tipe yang sudah ada: ${exactMatch.name}`);
+      return;
+    }
+
+    // Jika tidak ada exact match, lanjutkan penambahan baru
+    try {
+      const newWarna = await addNewWarna(trimmedName);
+      setAllWarna([...allWarna, newWarna]);
+      setSelectWarnaId(newWarna.id);
+      setWarna(newWarna.name);
+      toast.success("Warna berhasil ditambahkan!");
+    } catch (error) {
+      // Handle error
+    }
+  };
+  {/* sugest end warna */ }
 
   {/* sugest type kode negara */ }
   useEffect(() => {
@@ -189,10 +322,9 @@ export default function PembelianCreate({
       // Handle error
     }
   };
-  {/* sugest type kode negara */ }
+  {/* end type kode negara */ }
 
   {/* sugest type imei */ }
-  // get data imei all
   useEffect(() => {
     const fetchImei = async () => {
       try {
@@ -486,8 +618,8 @@ export default function PembelianCreate({
       supplier_id: supplierId,
       imei_id: selectImeiId,
       kodenegara_id: selectKodeNegaraId,
-      warna: warna,
-      kapasitas: kapasitas,
+      warna_id: selectWarnaId,
+      kapasitas_id: 1,
       handphone_id: handPhoneId,
       namehandphone_id: selectedHandphoneId,
       harga_pembelian: hargaPembelian,
@@ -562,6 +694,13 @@ export default function PembelianCreate({
     if (e.key === "Enter") {
       e.preventDefault();
       handleKodeNegaraTypeSubmit(e);
+    }
+  };
+
+  const handleKeyDownWarna = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleWarnaTypeSubmit(e);
     }
   };
 
@@ -852,17 +991,76 @@ export default function PembelianCreate({
                   <div className="col-lg-12">
                     <div className="mb-3">
                       <label className="form-label">Warna</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={warna}
-                        onChange={(e) => setWarna(e.target.value)}
-                      />
+                      <div className="input-group">
+                        <input
+                          type="text"
+                          className={`form-control ${errors.warna_type ? "is-invalid" : ""
+                            }`}
+                          value={warna}
+                          onChange={handleChangeWarna}
+                          onBlur={handleWarnaTypeSubmit}
+                          onKeyDown={handleKeyDownWarna}
+                          placeholder="Ketik atau pilih warna"
+                        />
+                        {!selectWarnaId && warna?.trim() && (
+                          <button
+                            className="btn btn-primary"
+                            type="button"
+                            onClick={handleWarnaTypeSubmit}
+                            disabled={suggestionsWarna.some(
+                              (item) =>
+                                item?.name?.trim().toLowerCase() ===
+                                warna.trim().toLowerCase()
+                            )}
+                          >
+                            {suggestionsWarna.some(
+                              (item) =>
+                                item?.name?.trim().toLowerCase() ===
+                                warna.trim().toLowerCase()
+                            )
+                              ? "Data sudah ada"
+                              : "Tambah Baru"}
+                          </button>
+                        )}
+                      </div>
+
                       {errors.warna && (
                         <div className="alert alert-danger mt-2">
                           {errors.warna}
                         </div>
                       )}
+
+                      {warna && suggestionsWarna.length > 0 && (
+                        <div className="mt-2">
+                          <div className="text-muted small mb-1">
+                            Pilih dari daftar:
+                          </div>
+                          <ul className="list-group">
+                            {suggestionsWarna.map((item) => (
+                              <li
+                                key={item.id}
+                                className="list-group-item list-group-item-action"
+                                onClick={() =>
+                                  handleSuggestionClickWarna(item.id, item.name)
+                                }
+                                style={{ cursor: "pointer" }}
+                              >
+                                {item.name}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {warna &&
+                        suggestionsWarna.length === 0 &&
+                        allWarna.length > 0 && (
+                          <div className="text-muted mt-1">
+                            {selectWarnaId
+                              ? `Menggunakan tipe: ${warna}`
+                              : "Tekan Enter untuk menambahkan tipe baru"}
+                          </div>
+                        )}
                     </div>
                   </div>
                   <div className="col-lg-12">
