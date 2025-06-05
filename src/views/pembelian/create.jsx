@@ -27,7 +27,6 @@ export default function PembelianCreate({
   // state
   const [supplierId, setSupplierId] = useState("");
   const [handPhoneId, setHandPhoneId] = useState("");
-  const [kapasitas, setKapasitas] = useState();
   const [hargaPembelian, setHargaPembelian] = useState("");
   const [sales, setSales] = useState("");
   const [tanggalPembelian, setTanggalPembelian] = useState("");
@@ -49,6 +48,11 @@ export default function PembelianCreate({
   const [suggestionsWarna, setSuggestionsWarna] = useState([]);
   const [allWarna, setAllWarna] = useState([]);
 
+  const [kapasitas, setKapasitas] = useState();
+  const [selectKapasitasId, setSelectKapasitasId] = useState("");
+  const [suggestionsKapasitas, setSuggestionsKapasitas] = useState([]);
+  const [allKapasitas, setAllKapasitas] = useState([]);
+
   const [namaHandPhone, setNamaHandPhone] = useState("");
   const [selectedHandphoneId, setSelectedHandphoneId] = useState("");
   const [suggestions, setSuggestions] = useState([]);
@@ -63,6 +67,138 @@ export default function PembelianCreate({
 
   //token
   const token = Cookies.get("token");
+
+
+  {/* sugest kapasitas */ }
+  useEffect(() => {
+    const fetchKapasitas = async () => {
+      try {
+        if (!token) {
+          console.error("Token tidak tersedia");
+          return;
+        }
+
+        Api.defaults.headers.common["Authorization"] = token;
+        const response = await Api.get("/api/kapasitas");
+
+        if (response.data && Array.isArray(response.data.data)) {
+          const uniqueKapasitas = response.data.data.reduce((acc, current) => {
+            if (!current || !current.name) return acc;
+
+            const existing = acc.find(item =>
+              item && item.name && current.name &&
+              item.name.trim().toLowerCase() === current.name.trim().toLowerCase()
+            );
+            return existing ? acc : [...acc, current];
+          }, []);
+
+          setAllKapasitas(uniqueKapasitas);
+        } else {
+          console.error("Data Kapasitas tidak valid:", response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching Warna:", error);
+        if (error.response) {
+          console.error("Response error:", error.response.data);
+        }
+      }
+    };
+
+    fetchKapasitas();
+  }, [token]);
+
+  const handleChangeKapasitas = (e) => {
+    const value = e.target.value;
+    setKapasitas(value);
+
+    // Hanya reset selectedKapasitasID jika input berbeda dengan yang terpilih
+    if (
+      selectKapasitasId &&
+      !allKapasitas.some(
+        (item) => item && item.id === selectKapasitasId && item.name === value
+      )
+    ) {
+      setSelectKapasitasId(null);
+    }
+
+    // Cari exact match terlebih dahulu
+    const exactMatch = allKapasitas.find(
+      (item) => item && item.name && item.name.trim().toLowerCase() === value.trim().toLowerCase()
+    );
+
+    if (exactMatch) {
+      setSuggestionsKapasitas([exactMatch]);
+    } else {
+      // Jika tidak ada exact match, cari partial match
+      const filteredSuggestionsKapasitas = allKapasitas.filter((item) =>
+        item && item.name && item.name.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestionsKapasitas(filteredSuggestionsKapasitas);
+    }
+  };
+
+  const handleSuggestionClickKapasitas = (id, name) => {
+    if (name) {
+      setKapasitas(name);
+      setSelectKapasitasId(id);
+      setSuggestionsKapasitas([]);
+    }
+  };
+
+  const addNewKapasitas = async (name) => {
+    try {
+      // Normalisasi nama untuk pengecekan (trim dan lowercase)
+      const normalizedInput = name.trim().toLowerCase();
+
+      // Cek duplikat di data lokal sebelum mengirim ke API
+      const isDuplicate = allKapasitas.some(
+        (item) => item.name.trim().toLowerCase() === normalizedInput
+      );
+
+      if (isDuplicate) {
+        throw new Error("Kapasitas ini sudah terdaftar");
+      }
+
+      Api.defaults.headers.common["Authorization"] = token;
+      const response = await Api.post("/api/kapasitas", { name });
+      return response.data.data;
+    } catch (error) {
+      console.error("Error adding new kapasitas type:", error);
+      throw error;
+    }
+  };
+
+  const handleKapasitasTypeSubmit = async (e) => {
+    e.preventDefault();
+
+    const trimmedName = kapasitas.trim();
+    if (!trimmedName) return;
+
+    // Cek exact match
+    const exactMatch = allKapasitas.find(
+      (item) => item.name.trim().toLowerCase() === trimmedName.toLowerCase()
+    );
+
+    if (exactMatch) {
+      setSelectKapasitasId(exactMatch.id);
+      setKapasitas(exactMatch.name);
+      toast.success(`Menggunakan tipe kapsitas yang sudah ada: ${exactMatch.name}`);
+      return;
+    }
+
+    // Jika tidak ada exact match, lanjutkan penambahan baru
+    try {
+      const newKapasitas = await addNewKapasitas(trimmedName);
+      setAllKapasitas([...allKapasitas, newKapasitas]);
+      setSelectKapasitasId(newKapasitas.id);
+      setKapasitas(newKapasitas.name);
+      toast.success("Kapasitas berhasil ditambahkan!");
+    } catch (error) {
+      // Handle error
+      console.error("Error adding kapasitas:", error);
+    }
+  };
+  {/* end sugest kapasitas */ }
 
   {/* sugest warna */ }
   useEffect(() => {
@@ -175,9 +311,9 @@ export default function PembelianCreate({
     );
 
     if (exactMatch) {
-      setSelectKodeNegaraId(exactMatch.id);
-      setKodeNegara(exactMatch.name);
-      toast.success(`Menggunakan tipe yang sudah ada: ${exactMatch.name}`);
+      setSelectWarnaId(exactMatch.id);
+      setWarna(exactMatch.name);
+      toast.success(`Menggunakan tipe warna yang sudah ada: ${exactMatch.name}`);
       return;
     }
 
@@ -619,7 +755,7 @@ export default function PembelianCreate({
       imei_id: selectImeiId,
       kodenegara_id: selectKodeNegaraId,
       warna_id: selectWarnaId,
-      kapasitas_id: 1,
+      kapasitas_id: selectKapasitasId,
       handphone_id: handPhoneId,
       namehandphone_id: selectedHandphoneId,
       harga_pembelian: hargaPembelian,
@@ -701,6 +837,13 @@ export default function PembelianCreate({
     if (e.key === "Enter") {
       e.preventDefault();
       handleWarnaTypeSubmit(e);
+    }
+  };
+
+  const handleKeyDownKapasitas = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleKapasitasTypeSubmit(e);
     }
   };
 
@@ -1066,17 +1209,76 @@ export default function PembelianCreate({
                   <div className="col-lg-12">
                     <div className="mb-3">
                       <label className="form-label">Kapasitas</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={kapasitas}
-                        onChange={(e) => setKapasitas(e.target.value)}
-                      />
+                      <div className="input-group">
+                        <input
+                          type="text"
+                          className={`form-control ${errors.kapasitas_type ? "is-invalid" : ""
+                            }`}
+                          value={kapasitas}
+                          onChange={handleChangeKapasitas}
+                          onBlur={handleKapasitasTypeSubmit}
+                          onKeyDown={handleKeyDownKapasitas}
+                          placeholder="Ketik atau pilih kapasitas"
+                        />
+                        {!selectKapasitasId && kapasitas?.trim() && (
+                          <button
+                            className="btn btn-primary"
+                            type="button"
+                            onClick={handleKapasitasTypeSubmit}
+                            disabled={suggestionsKapasitas.some(
+                              (item) =>
+                                item?.name?.trim().toLowerCase() ===
+                                kapasitas.trim().toLowerCase()
+                            )}
+                          >
+                            {suggestionsKapasitas.some(
+                              (item) =>
+                                item?.name?.trim().toLowerCase() ===
+                                kapasitas.trim().toLowerCase()
+                            )
+                              ? "Data sudah ada"
+                              : "Tambah Baru"}
+                          </button>
+                        )}
+                      </div>
+
                       {errors.kapasitas && (
                         <div className="alert alert-danger mt-2">
                           {errors.kapasitas}
                         </div>
                       )}
+
+                      {kapasitas && suggestionsKapasitas.length > 0 && (
+                        <div className="mt-2">
+                          <div className="text-muted small mb-1">
+                            Pilih dari daftar:
+                          </div>
+                          <ul className="list-group">
+                            {suggestionsKapasitas.map((item) => (
+                              <li
+                                key={item.id}
+                                className="list-group-item list-group-item-action"
+                                onClick={() =>
+                                  handleSuggestionClickKapasitas(item.id, item.name)
+                                }
+                                style={{ cursor: "pointer" }}
+                              >
+                                {item.name}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {kapasitas &&
+                        suggestionsKapasitas.length === 0 &&
+                        allKapasitas.length > 0 && (
+                          <div className="text-muted mt-1">
+                            {selectKapasitasId
+                              ? `Menggunakan tipe: ${kapasitas}`
+                              : "Tekan Enter untuk menambahkan tipe baru"}
+                          </div>
+                        )}
                     </div>
                   </div>
                   <div className="col-lg-12">
