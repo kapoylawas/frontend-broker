@@ -20,7 +20,7 @@ import Barcode from "./components/Barcode";
 export default function Dashboard() {
   //state products
   const [products, setProducts] = useState([]);
-
+  
   //define state "pagination"
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -158,7 +158,7 @@ export default function Dashboard() {
                               </td>
                               <td data-label="imei">
                                 <Barcode
-                                  value={product.imei.imei}
+                                  value={product.imei.barcode}
                                   format={"CODE39"}
                                   lineColor={"#000"}
                                   width={1}

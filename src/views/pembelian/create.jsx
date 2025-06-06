@@ -900,15 +900,7 @@ export default function PembelianCreate({
                           type="text"
                           className={`form-control ${errors.imei_type ? "is-invalid" : ""}`}
                           value={imei}
-                          onChange={(e) => {
-                            // Batasi input maksimal 8 karakter
-                            const value = e.target.value;
-                            if (value.length <= 8) {
-                              setImei(value);
-                              handleChangeImei(e); // Tetap jalankan handleChangeImei untuk suggestions
-                            }
-                          }}
-                          maxLength={8}
+                          onChange={handleChangeImei}
                           onBlur={handleImeiTypeSubmit}
                           onKeyDown={handleKeyDownImei}
                           placeholder="Ketik atau pilih imei"
