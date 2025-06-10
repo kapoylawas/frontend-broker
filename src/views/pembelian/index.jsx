@@ -20,7 +20,7 @@ import Barcode from "./components/Barcode";
 export default function Dashboard() {
   //state products
   const [products, setProducts] = useState([]);
-  
+
   //define state "pagination"
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -141,7 +141,7 @@ export default function Dashboard() {
                           <th>Harga Pembelian</th>
                           <th>Jenis Pembelian</th>
                           <th>Tanggal Pembelian</th>
-                          <th>Sales</th>
+                          <th>Quality Control</th>
                           <th>Catatan</th>
                           <th className="w-1">Actions</th>
                         </tr>
@@ -199,7 +199,7 @@ export default function Dashboard() {
                                   ? product.tanggal_pembelian.split("T")[0]
                                   : "Tanggal tidak tersedia"}
                               </td>
-                              <td data-label="Stock">{product.sales}</td>
+                              <td data-label="Stock">{product.quality_control}</td>
                               <td data-label="Stock">{product.catatan_awal}</td>
                               <td>
                                 <div className="btn-list flex-nowrap">

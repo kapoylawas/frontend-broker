@@ -28,8 +28,8 @@ export default function PembelianCreate({
   const [supplierId, setSupplierId] = useState("");
   const [handPhoneId, setHandPhoneId] = useState("");
   const [hargaPembelian, setHargaPembelian] = useState("");
-  const [sales, setSales] = useState("");
-  const [tanggalPembelian, setTanggalPembelian] = useState("");
+  const [qualityControl, setQualityControl] = useState("");
+  const [unit, setUnit] = useState("");
   const [jenisPembelian, setJenisPembelian] = useState("");
   const [catatan, setCatatan] = useState("");
 
@@ -759,8 +759,8 @@ export default function PembelianCreate({
       handphone_id: handPhoneId,
       namehandphone_id: selectedHandphoneId,
       harga_pembelian: hargaPembelian,
-      sales: sales,
-      tanggal_pembelian: tanggalPembelian,
+      quality_control: qualityControl,
+      unit: unit,
       jenis_pembelian: jenisPembelian,
       catatan_awal: catatan,
     })
@@ -799,8 +799,8 @@ export default function PembelianCreate({
     setNamaHandPhone("");
     setCatatan("");
     setHargaPembelian("");
-    setSales("");
-    setTanggalPembelian("");
+    setQualityControl("");
+    setUnit("");
     setJenisPembelian("");
     setErrors({});
   };
@@ -1291,32 +1291,27 @@ export default function PembelianCreate({
                   </div>
                   <div className="col-lg-12">
                     <div className="mb-3">
-                      <label className="form-label">Sales</label>
+                      <label className="form-label">Quality control</label>
                       <input
                         type="text"
                         className="form-control"
-                        value={sales}
-                        onChange={(e) => setSales(e.target.value)}
+                        value={qualityControl}
+                        onChange={(e) => setQualityControl(e.target.value)}
                       />
-                      {errors.sales && (
-                        <div className="alert alert-danger mt-2">
-                          {errors.sales}
-                        </div>
-                      )}
                     </div>
                   </div>
                   <div className="col-lg-6">
                     <div className="mb-3">
-                      <label className="form-label">Tanggal Pembelian</label>
+                      <label className="form-label">Unit</label>
                       <input
-                        type="date"
+                        type="text"
                         className="form-control"
-                        value={tanggalPembelian}
-                        onChange={(e) => setTanggalPembelian(e.target.value)}
+                        value={unit}
+                        onChange={(e) => setUnit(e.target.value)}
                       />
-                      {errors.tanggal_pembelian && (
+                      {errors.unit && (
                         <div className="alert alert-danger mt-2">
-                          {errors.tanggal_pembelian}
+                          {errors.unit}
                         </div>
                       )}
                     </div>
