@@ -59,6 +59,7 @@ export default function PembelianCreate({
   const [allHandphones, setAllHandphones] = useState([]); // Menyimpan semua handphone
 
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   //state supplier
   const [supplier, setSupplier] = useState([]);
@@ -748,44 +749,53 @@ export default function PembelianCreate({
   //function "storeProduct"
   const storeBarangMasuk = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
-    await Api.post("/api/barang-masuk", {
-      //data
-      supplier_id: supplierId,
-      imei_id: selectImeiId,
-      kodenegara_id: selectKodeNegaraId,
-      warna_id: selectWarnaId,
-      kapasitas_id: selectKapasitasId,
-      handphone_id: handPhoneId,
-      namehandphone_id: selectedHandphoneId,
-      harga_pembelian: hargaPembelian,
-      quality_control: qualityControl,
-      unit: unit,
-      jenis_pembelian: jenisPembelian,
-      catatan_awal: catatan,
-    })
-      .then((response) => {
-        //show toast
-        toast.success(`${response.data.meta.message}`, {
-          duration: 5000,
-          position: "top-center",
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
-        });
-
-        //call function "fetchData"
-        fetchData();
-
-        // Reset form
-        resetForm();
-      })
-      .catch((error) => {
-        //assign error to function "handleErrors"
-        handleErrors(error.response.data, setErrors);
+    try {
+      const response = await Api.post("/api/barang-masuk", {
+        supplier_id: supplierId,
+        imei_id: selectImeiId,
+        kodenegara_id: selectKodeNegaraId,
+        warna_id: selectWarnaId,
+        kapasitas_id: selectKapasitasId,
+        handphone_id: handPhoneId,
+        namehandphone_id: selectedHandphoneId,
+        harga_pembelian: hargaPembelian,
+        quality_control: qualityControl,
+        unit: unit,
+        jenis_pembelian: jenisPembelian,
+        catatan_awal: catatan,
       });
+
+      // Show success toast
+      toast.success(`${response.data.meta.message}`, {
+        duration: 5000,
+        position: "top-center",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
+
+      // Refresh data
+      fetchData();
+
+      // Reset form
+      resetForm();
+
+    } catch (error) {
+      // Handle errors
+      handleErrors(error.response?.data, setErrors);
+
+      // Show error toast if needed
+      toast.error("Gagal menyimpan data barang masuk", {
+        duration: 5000,
+        position: "top-center",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   //function to reset form
@@ -1363,24 +1373,35 @@ export default function PembelianCreate({
                 <button
                   type="submit"
                   className="btn btn-primary ms-auto rounded"
+                  disabled={isLoading}
+                  onClick={storeBarangMasuk}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="icon"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    strokeWidth="2"
-                    stroke="currentColor"
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M12 5l0 14" />
-                    <path d="M5 12l14 0" />
-                  </svg>
-                  SAVE
+                  {isLoading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      MENYIMPAN...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2"
+                        stroke="currentColor"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 5l0 14" />
+                        <path d="M5 12l14 0" />
+                      </svg>
+                      SAVE
+                    </>
+                  )}
                 </button>
               </div>
             </div>

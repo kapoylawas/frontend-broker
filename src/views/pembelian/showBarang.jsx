@@ -19,18 +19,37 @@ export default function ShowBarang() {
   const [dataHandPhone, setDataHandPhone] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [supplierId, setSupplierId] = useState("");
+  const [imeiId, setImeiId] = useState("");
+
+  const [kodeNegaraId, setKodeNegaraId] = useState("");
+  const [tipeHandPhoneId, setTipeHandPhoneId] = useState("");
+  const [warnaId, setWarnaId] = useState("");
+  const [kapasitasId, setKapasitasId] = useState("");
   const [namaHandPhone, setNamaHandPhone] = useState("");
+  const [tipeHandPhone, setTipeHandPhone] = useState("");
+  const [kodeNegara, setKodeNegara] = useState("");
+  const [warna, setWarna] = useState("");
+  const [kapasitas, setKapasitas] = useState("");
+
+
+  const [barcode, setBarcode] = useState("");
 
   const [handPhoneId, setHandPhoneId] = useState("");
   const [imei, setImei] = useState("");
   const [jenisPembelian, setJenisPembelian] = useState("");
   const [tanggalPembelian, setTanggalPembelian] = useState("");
-  const [sales, setSales] = useState("");
+  const [qualityControl, setQualityControl] = useState("");
+  const [unit, setUnit] = useState("");
   const [catatanAwal, setCatatanAwal] = useState("");
   const [catatanSelesai, setCatatanSelesai] = useState("");
   const [hargaPembelian, setHargaPembelian] = useState("");
   const [supplier, setSupplier] = useState([]);
   const [handPhone, setHandPhone] = useState([]);
+  const [dataTipeHanphone, setDataTipeHanphone] = useState([]);
+  const [dataKodeNegara, setDatakodeNegara] = useState([]);
+  const [dataWarna, setDataWarna] = useState([]);
+  const [dataKapasitas, setDataKapasitas] = useState([]);
+
 
   const fetchSupplier = async () => {
     Api.defaults.headers.common["Authorization"] = token;
@@ -46,22 +65,63 @@ export default function ShowBarang() {
     });
   };
 
+  const fetchTipeHandPhone = async () => {
+    Api.defaults.headers.common["Authorization"] = token;
+    await Api.get("/api/tipe-hand-phone").then((response) => {
+      setDataTipeHanphone(response.data.data);
+    });
+  };
+
+  const fetchKodeNegara = async () => {
+    Api.defaults.headers.common["Authorization"] = token;
+    await Api.get("/api/kode-negara").then((response) => {
+      setDatakodeNegara(response.data.data);
+    });
+  };
+
+  const fetchWarna = async () => {
+    Api.defaults.headers.common["Authorization"] = token;
+    await Api.get("/api/warna").then((response) => {
+      setDataWarna(response.data.data);
+    });
+  };
+
+  const fetchKapasitas = async () => {
+    Api.defaults.headers.common["Authorization"] = token;
+    await Api.get("/api/kapasitas").then((response) => {
+      setDataKapasitas(response.data.data);
+    });
+  };
+
   const fetchBarangMasuk = async () => {
     Api.defaults.headers.common["Authorization"] = token;
     await Api.get(`/api/barang-masuk/${id}`).then((response) => {
+
       // setDataBarang(response.data.data);
       setDataSupplier(response.data.data.supplier);
       setDataHandPhone(response.data.data.handphone);
-      setImei(response.data.data.imei);
+      setImei(response.data.data.imei.imei);
+      setBarcode(response.data.data.imei.barcode);
       setJenisPembelian(response.data.data.jenis_pembelian);
       setTanggalPembelian(response.data.data.tanggal_pembelian);
-      setSales(response.data.data.sales);
       setCatatanAwal(response.data.data.catatan_awal);
       setCatatanSelesai(response.data.data.catatan_selesai);
       setHargaPembelian(response.data.data.harga_pembelian);
       setSupplierId(response.data.data.supplier.id);
       setHandPhoneId(response.data.data.handphone.id);
-      setNamaHandPhone(response.data.data.name_handphone);
+      setNamaHandPhone(response.data.data.handphone.name);
+      setTipeHandPhone(response.data.data.tipe_handphone.name)
+      setQualityControl(response.data.data.quality_control)
+      setUnit(response.data.data.unit)
+      setKodeNegara(response.data.data.kode_negara.name)
+      setWarna(response.data.data.warna.name)
+      setKapasitas(response.data.data.kapasitas.name)
+
+      setImeiId(response.data.data.imei.id)
+      setKodeNegaraId(response.data.data.kode_negara.id)
+      setTipeHandPhoneId(response.data.data.tipe_handphone.id)
+      setWarnaId(response.data.data.warna.id)
+      setKapasitasId(response.data.data.kapasitas.id)
     });
   };
 
@@ -69,6 +129,10 @@ export default function ShowBarang() {
     fetchBarangMasuk();
     fetchSupplier();
     fetchHandPhone();
+    fetchTipeHandPhone();
+    fetchKodeNegara();
+    fetchWarna();
+    fetchKapasitas();
   }, []);
 
   const supplierOptions = supplier.map((sup) => ({
@@ -83,6 +147,34 @@ export default function ShowBarang() {
     }))
     : [];
 
+  const handTipePhoneOptions = Array.isArray(dataTipeHanphone)
+    ? dataTipeHanphone.map((tipe) => ({
+      value: tipe.id,
+      label: `${tipe.name}`,
+    }))
+    : [];
+
+  const handKodeNegaraOptions = Array.isArray(dataKodeNegara)
+    ? dataKodeNegara.map((kode) => ({
+      value: kode.id,
+      label: `${kode.name}`,
+    }))
+    : [];
+
+  const handWarnaOptions = Array.isArray(dataWarna)
+    ? dataWarna.map((warna) => ({
+      value: warna.id,
+      label: `${warna.name}`,
+    }))
+    : [];
+
+  const handKapasitasOptions = Array.isArray(dataKapasitas)
+    ? dataKapasitas.map((kps) => ({
+      value: kps.id,
+      label: `${kps.name}`,
+    }))
+    : [];
+
   const handleEditToggle = async () => {
     if (isEditing) {
       await updateBarangMasuk();
@@ -93,11 +185,15 @@ export default function ShowBarang() {
   const updateBarangMasuk = async () => {
     const payload = {
       supplier_id: supplierId,
-      imei: imei,
       handphone_id: handPhoneId,
+      imei_id: imeiId,
+      kodenegara_id: kodeNegaraId,
+      warna_id: warnaId,
+      kapasitas_id: kapasitasId,
+      namehandphone_id: tipeHandPhoneId,
       harga_pembelian: hargaPembelian,
-      name_handphone: namaHandPhone,
-      sales: sales,
+      quality_control: qualityControl,
+      unit: unit,
       tanggal_pembelian: tanggalPembelian,
       jenis_pembelian: jenisPembelian,
       catatan_awal: catatanAwal,
@@ -131,7 +227,6 @@ export default function ShowBarang() {
               <Tabs>
                 <TabList>
                   <Tab>BAYAR</Tab>
-                  <Tab>CANCEL</Tab>
                   <Tab>CETAK BARCODE</Tab>
                 </TabList>
 
@@ -143,8 +238,8 @@ export default function ShowBarang() {
                           <table className="table table-vcenter card-table">
                             <tbody>
                               <tr>
-                                <th>Nota Number</th>
-                                <td>250380DF5B</td>
+                                <th>Number Barcode</th>
+                                <td>{barcode}</td>
                               </tr>
                               <tr>
                                 <th>Supplier</th>
@@ -172,23 +267,22 @@ export default function ShowBarang() {
                                 </td>
                               </tr>
                               <tr>
-                                <th>Purchase Type</th>
-                                <td>PEMBELIAN LANGSUNG</td>
-                              </tr>
-                              <tr>
-                                <th>Nama Handphone</th>
+                                <th>Merek Handphone</th>
                                 <td>
                                   {isEditing ? (
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      value={namaHandPhone}
-                                      onChange={(e) =>
-                                        setNamaHandPhone(e.target.value)
-                                      }
+                                    <Select
+                                      options={handPhoneOptions}
+                                      value={handPhoneOptions.find(
+                                        (option) => option.value === handPhoneId
+                                      )}
+                                      onChange={(selectedOption) => {
+                                        setHandPhoneId(selectedOption ? selectedOption.value : "");
+                                        setNamaHandPhone(selectedOption ? selectedOption.label : "");
+                                      }}
+                                      placeholder="-- Select Handphone --"
                                     />
                                   ) : (
-                                    <b>{namaHandPhone}</b>
+                                    <b>{dataHandPhone?.name || namaHandPhone}</b>
                                   )}
                                 </td>
                               </tr>
@@ -197,38 +291,85 @@ export default function ShowBarang() {
                                 <td>
                                   {isEditing ? (
                                     <Select
-                                      options={handPhoneOptions}
-                                      value={handPhoneOptions.find(
-                                        (option) => option.value === handPhoneId
+                                      options={handTipePhoneOptions}
+                                      value={handTipePhoneOptions.find(
+                                        (option) => option.value === tipeHandPhoneId
                                       )}
-                                      onChange={(selectedOption) =>
-                                        setHandPhoneId(
-                                          selectedOption
-                                            ? selectedOption.value
-                                            : ""
-                                        )
-                                      }
-                                      placeholder="-- Select Handphone --"
+                                      onChange={(selectedOption) => {
+                                        setTipeHandPhoneId(selectedOption ? selectedOption.value : "");
+                                        setTipeHandPhone(selectedOption ? selectedOption.label : "");
+                                      }}
+                                      placeholder="-- Select Tipe Handphone --"
                                     />
                                   ) : (
-                                    <b>{dataHandPhone.name}</b>
+                                    <b>{dataTipeHanphone?.type || tipeHandPhone}</b>
+                                  )}
+                                </td>
+                              </tr>
+                              <tr>
+                                <th>Kode Negara</th>
+                                <td>
+                                  {isEditing ? (
+                                    <Select
+                                      options={handKodeNegaraOptions}
+                                      value={handKodeNegaraOptions.find(
+                                        (option) => option.value === kodeNegaraId
+                                      )}
+                                      onChange={(selectedOption) => {
+                                        setKodeNegaraId(selectedOption ? selectedOption.value : "");
+                                        setKodeNegara(selectedOption ? selectedOption.label : "");
+                                      }}
+                                      placeholder="-- Select Kode Negara --"
+                                    />
+                                  ) : (
+                                    <b>{kodeNegara}</b>
+                                  )}
+                                </td>
+                              </tr>
+                              <tr>
+                                <th>Warna</th>
+                                <td>
+                                  {isEditing ? (
+                                    <Select
+                                      options={handWarnaOptions}
+                                      value={handWarnaOptions.find(
+                                        (option) => option.value === warnaId
+                                      )}
+                                      onChange={(selectedOption) => {
+                                        setWarnaId(selectedOption ? selectedOption.value : "");
+                                        setWarna(selectedOption ? selectedOption.label : "");
+                                      }}
+                                      placeholder="-- Select Warna --"
+                                    />
+                                  ) : (
+                                    <b>{warna}</b>
+                                  )}
+                                </td>
+                              </tr>
+                              <tr>
+                                <th>Kapasitas</th>
+                                <td>
+                                  {isEditing ? (
+                                    <Select
+                                      options={handKapasitasOptions}
+                                      value={handKapasitasOptions.find(
+                                        (option) => option.value === kapasitasId
+                                      )}
+                                      onChange={(selectedOption) => {
+                                        setKapasitasId(selectedOption ? selectedOption.value : "");
+                                        setKapasitas(selectedOption ? selectedOption.label : "");
+                                      }}
+                                      placeholder="-- Select Kapasitas --"
+                                    />
+                                  ) : (
+                                    <b>{kapasitas}</b>
                                   )}
                                 </td>
                               </tr>
                               <tr>
                                 <th>IMEI</th>
                                 <td>
-                                  {isEditing ? (
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      value={imei}
-                                      onChange={(e) => setImei(e.target.value)}
-                                      placeholder="Scan IMEI"
-                                    />
-                                  ) : (
-                                    <b>{imei}</b>
-                                  )}
+                                  <b>{imei}</b>
                                 </td>
                               </tr>
                               <tr>
@@ -270,17 +411,32 @@ export default function ShowBarang() {
                                 </td>
                               </tr>
                               <tr>
-                                <th>Sales</th>
+                                <th>Quality Control</th>
                                 <td>
                                   {isEditing ? (
                                     <input
                                       type="text"
                                       className="form-control"
-                                      value={sales}
-                                      onChange={(e) => setSales(e.target.value)}
+                                      value={qualityControl}
+                                      onChange={(e) => setQualityControl(e.target.value)}
                                     />
                                   ) : (
-                                    <b>{sales}</b>
+                                    <b>{qualityControl}</b>
+                                  )}
+                                </td>
+                              </tr>
+                              <tr>
+                                <th>Unit</th>
+                                <td>
+                                  {isEditing ? (
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={unit}
+                                      onChange={(e) => setUnit(e.target.value)}
+                                    />
+                                  ) : (
+                                    <b>{unit}</b>
                                   )}
                                 </td>
                               </tr>
@@ -336,22 +492,10 @@ export default function ShowBarang() {
                                 </td>
                               </tr>
                               <tr>
-                                <th>Discount</th>
-                                <td>0</td>
-                              </tr>
-                              <tr>
-                                <th>Cost</th>
-                                <td>0</td>
-                              </tr>
-                              <tr>
                                 <th>Total</th>
                                 <td>
                                   <b>{moneyFormat(hargaPembelian)}</b>
                                 </td>
-                              </tr>
-                              <tr>
-                                <th>Payment Status</th>
-                                <td>0</td>
                               </tr>
                             </tbody>
                           </table>
@@ -379,9 +523,6 @@ export default function ShowBarang() {
                       </div>
                     </div>
                   </div>
-                </TabPanel>
-                <TabPanel>
-                  <h2>tab cancel</h2>
                 </TabPanel>
                 <TabPanel>
                   <h2>tab cetak barcode</h2>
